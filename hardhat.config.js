@@ -1,11 +1,12 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("dotenv").config({ path: ".env" });
 
 // The next line is part of the sample project, you don't need it in your
 // project. It imports a Hardhat task definition, that can be used for
 // testing the frontend.
 require("./tasks/faucet");
 
-const { GOERLI_PRIVATE_KEY = '', ALCHEMY_PROJECT_ID = "" } = process.env;
+const { GOERLI_PRIVATE_KEY, ALCHEMY_PROJECT_ID} = process.env;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
