@@ -24,7 +24,9 @@ async function pushPay() {
     let kols = await getKolsFixtrue();
     console.log("startCreateCampaign:" + kols.length);
 
-    await ad3Hub.createCampaign(kols, 100000, 10);
+    let createCampaign =await ad3Hub.createCampaign(kols, 100000, 10);
+    let receipt = await customHttpProvider.getTransactionReceipt(createCampaign.hash);
+    console.log("createCampaign gas used:" + receipt.gasUsed);
 
     let campaignAddress = await ad3Hub.getCampaignAddress(owner.address, 1);
     let Campaign = new ethers.Contract(
@@ -37,7 +39,11 @@ async function pushPay() {
 
     let kolAddress = await getKolsAddress();
     //first kol pay
-    await ad3Hub.payfixFee(kolAddress, owner.address, 1);
+    payfixFee = await ad3Hub.payfixFee(kolAddress, owner.address, 1);
+    receipt = await customHttpProvider.getTransactionReceipt(payfixFee.hash);
+    console.log("payfixFee gas used:" + receipt.gasUsed);
+
+
     //second kol pay
     await ad3Hub.payfixFee(kolAddress, owner.address, 1);
 
@@ -53,7 +59,7 @@ async function pushPay() {
     let result = await ad3Hub.pushPay(owner.address, 1, kolWithUsers, overrides);
     console.log("finish pushPay");
     let info = await customHttpProvider.getTransactionReceipt(result.hash);
-    console.log("gas used:" + info.gasUsed);
+    console.log("pushPay gas used:" + info.gasUsed);
     let resultAfterUserPay = await Campaign.remainBalance();
     console.log("resultAfterUserPay:" + resultAfterUserPay);
     console.log("pushPay complated");
