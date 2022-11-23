@@ -4,7 +4,7 @@ const Campaign_Artifact = require("../artifacts/contracts/Campaign.sol/Campaign.
 const overrides = {
     gasLimit: 15000000,
     gasPrice: 10 * (10 ** 9)
-  }
+}
 
 async function main() {
 
@@ -20,11 +20,16 @@ async function pushPay() {
     const { ad3Hub, owner } = await deployAD3HubFixture();
     const { token } = await deployPaymentToken();
     await ad3Hub.setPaymentToken(token.address);
-    await token.approve(ad3Hub.address, 100000);
+    //1000 usdt
+    //https://ethereum.org/en/developers/tutorials/send-token-etherjs/
+    let numberOfTokens = ethers.utils.parseUnits("1000", 2);
+    console.log("numberOfTokens:" + numberOfTokens);
+    await token.approve(ad3Hub.address, numberOfTokens);
+
     let kols = await getKolsFixtrue();
     console.log("startCreateCampaign:" + kols.length);
 
-    let createCampaign =await ad3Hub.createCampaign(kols, 100000, 10);
+    let createCampaign = await ad3Hub.createCampaign(kols, 100000, 10);
     let receipt = await customHttpProvider.getTransactionReceipt(createCampaign.hash);
     console.log("createCampaign gas used:" + receipt.gasUsed);
 
@@ -36,6 +41,10 @@ async function pushPay() {
     );
     let resultBeforePay = await Campaign.remainBalance();
     console.log("resultBeforePay:" + resultBeforePay);
+    // campaign amount
+    let numberOfAmount = ethers.utils.formatUnits(resultBeforePay, 2);
+    console.log("numberOfAmount:" + numberOfAmount);
+
 
     let kolAddress = await getKolsAddress();
     //first kol pay
@@ -55,7 +64,7 @@ async function pushPay() {
 
     // let result = await Campaign.pushPay(kolWithUsers);
     // let result = await ad3Hub.pushPayTest(owner.address, 1, kolWithUsers, overrides);
-    
+
     let result = await ad3Hub.pushPay(owner.address, 1, kolWithUsers, overrides);
     console.log("finish pushPay");
     let info = await customHttpProvider.getTransactionReceipt(result.hash);
