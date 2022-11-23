@@ -128,7 +128,7 @@ contract AD3Hub is Ownable {
      * - E.g. User deposits 100 USDC and gets in return 100 bUSDC
      * @param kols kols with his users list
      **/
-    function pushPay(address advertiser, uint64 campaignId, AD3lib.kolWithUsers[] calldata kols) external{
+    function pushPay(address advertiser, uint64 campaignId, AD3lib.kolWithUsers[] calldata kols) external onlyOwner{
         uint256 balance = IERC20(_paymentToken).balanceOf(campaigns[advertiser][campaignId]);
         require(balance > 0, 'AD3: balance <= 0');
 
