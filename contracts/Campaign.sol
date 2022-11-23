@@ -76,7 +76,7 @@ contract Campaign is Ownable {
         return true;
     }
 
-    function pushPay(AD3lib.kolWithUsers[] memory kols) public returns (bool) {
+    function pushPay(AD3lib.kolWithUsers[] memory kols) public onlyOwner returns (bool) {
         require(kols.length > 0,"AD3: kols of pay is empty");
 
         uint256 balance = IERC20(_paymentToken).balanceOf(address(this));
