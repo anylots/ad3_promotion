@@ -92,7 +92,7 @@ contract AD3Hub is Ownable {
         }
         
         //init kols,other params
-        (bool success, bytes memory returnData) = instance.call(abi.encodeWithSignature("init(address,address,string,string)", address(this)));
+        (bool success, ) = instance.call(abi.encodeWithSignature("init(address,address,string,string)", address(this)));
         require(success == true,"createCampaign init fail");
 
         //init amount
