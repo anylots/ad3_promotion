@@ -2,6 +2,7 @@ const { expect } = require("chai");
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const Campaign_Artifact = require("../artifacts/contracts/Campaign.sol/Campaign.json")
 const Token_Artifact = require("../artifacts/contracts/USDT.sol/Token.json")
+require("hardhat-gas-reporter");
 
 // Ad3 contract uniting test
 describe("Ad3 contract", function () {

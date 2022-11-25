@@ -158,7 +158,7 @@ contract AD3Hub is Ownable {
     }
 
     function setPaymentToken(address token) external onlyOwner{
-        require(token != address(0), "AD3Hub: advertiser is zero address");
+        require(token != address(0), "AD3Hub: paymentToken is zero address");
         _paymentToken = token;
     }
 
