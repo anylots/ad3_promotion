@@ -171,7 +171,7 @@ contract AD3Hub is Ownable {
      * @param advertiser The address of the advertiser who create campaign
      **/
     function getCampaignAddress(address advertiser, uint64 campaignId) public view returns(address){
-        require(advertiser != address(0), "NFTPool: nftAsset is zero address");
+        require(advertiser != address(0), "AD3Hub: advertiser is zero address");
         return campaigns[advertiser][campaignId];
     }
 
@@ -180,7 +180,7 @@ contract AD3Hub is Ownable {
      * @param advertiser The address of the advertiser who create campaign
      **/
     function getCampaignAddressList(address advertiser) public view returns(address[] memory){
-        require(advertiser != address(0), "NFTPool: nftAsset is zero address");
+        require(advertiser != address(0), "AD3Hub: advertiser is zero address");
         uint64 length = campaignIds[advertiser];
         if(length == 0){
             revert();
