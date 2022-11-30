@@ -40,8 +40,8 @@ async function main() {
 
 
     let output = [];
-    // 我们将accounts[0]作为deployer和signer，account[1]、account[2]、account[3]作为白名单地址
     for (let i = 0; i < user_addresses.length; i++) {
+        //对活动地址、用户地址、面额进行签名
         let signature = await getSignature(signer, campaignAddress, user_addresses[i], 10);
         console.log('Generating...');
         output.push({
