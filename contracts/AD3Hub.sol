@@ -37,14 +37,15 @@ contract AD3Hub is Ownable {
 
 
     /*//////////////////////////////////////////////////////////////
-                                STORGE
+                                STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    address private _paymentToken;
+    address public _paymentToken;
 
     // Mapping from Advertiser address to campaign address
     mapping(address => mapping(uint64 => address)) private campaigns;
 
+    // Mapping from campaign address to the lastest campaignId
     mapping(address => uint64) private campaignIds;
 
 

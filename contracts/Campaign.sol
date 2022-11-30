@@ -13,7 +13,7 @@ import "./libs/AD3lib.sol";
  * @dev Fund and crowd management logic of Ad3 protocol.
  * - All admin functions are callable by the ad3Hub
  * - Users can:
- *   # Query remain balance
+ *   # Query campaign remain balance
  *
  * @author Ad3
  **/
@@ -22,9 +22,9 @@ contract Campaign is Ownable {
 
     mapping(address => AD3lib.kol) private _kolStorages;
     address private _ad3hub;
-    uint256 private _serviceCharge = 5;
-    uint private _userFee;
-    address private _paymentToken;
+    uint256 public _serviceCharge = 5;
+    uint public _userFee;
+    address public _paymentToken;
 
     modifier onlyAd3Hub() {
         require(
@@ -57,11 +57,6 @@ contract Campaign is Ownable {
 
             _kolStorages[kol._address] = kol;
         }
-    }
-
-    function remainBalance() public view returns (uint256) {
-        uint256 balance = IERC20(_paymentToken).balanceOf(address(this));
-        return balance;
     }
 
     /**
@@ -123,6 +118,14 @@ contract Campaign is Ownable {
         require(IERC20(_paymentToken).transfer(advertiser, balance));
 
         return true;
+    }
+
+    /**
+     * @dev Query campaign remain balance.
+     **/
+    function remainBalance() public view returns (uint256) {
+        uint256 balance = IERC20(_paymentToken).balanceOf(address(this));
+        return balance;
     }
 
     /**
