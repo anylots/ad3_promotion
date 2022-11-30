@@ -32,7 +32,7 @@ async function claimPrize() {
     let balance = await USDT.balanceOf(signer.address);
     console.log("balance before claim:" + balance);
 
-    let result = await Campaign.claimUserPrize(fetchCoupon("0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199"), 10);
+    let result = await Campaign.claimUserPrize(fetchCoupon(signer.address), 10);
     console.log("result:" + result.hash);
 
     balance = await USDT.balanceOf(signer.getAddress());
