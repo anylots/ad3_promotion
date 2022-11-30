@@ -15,11 +15,18 @@ async function main() {
 
 async function pushPay() {
     // Connect a wallet to localhost
-    let customHttpProvider = new ethers.providers.JsonRpcProvider("http://localhost:8545");
+    let customHttpProvider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
 
+    
     const { ad3Hub, owner } = await deployAD3HubFixture();
+    console.log(owner.address);
+
     const { token } = await deployPaymentToken();
+    console.log("usdtAddress: "+ token.address);
+
     await ad3Hub.setPaymentToken(token.address);
+    await ad3Hub.setTrustedSigner(owner.address);
+
     //1000 usdt
     //https://ethereum.org/en/developers/tutorials/send-token-etherjs/
     let numberOfTokens = ethers.utils.parseUnits("1000", 2);
@@ -29,11 +36,12 @@ async function pushPay() {
     let kols = await getKolsFixtrue();
     console.log("startCreateCampaign:" + kols.length);
 
-    let createCampaign = await ad3Hub.createCampaign(kols, 100000, 10);
+    let createCampaign = await ad3Hub.createCampaign(kols, 100000, 12);
     let receipt = await customHttpProvider.getTransactionReceipt(createCampaign.hash);
     console.log("createCampaign gas used:" + receipt.gasUsed);
 
     let campaignAddress = await ad3Hub.getCampaignAddress(owner.address, 1);
+    console.log('campaignAddress: ' + campaignAddress);
     let Campaign = new ethers.Contract(
         campaignAddress,
         Campaign_Artifact.abi,
@@ -133,7 +141,7 @@ async function getKolsFixtrue() {
 async function getKolWithUsers() {
     const [owner, addr1, addr2, addr3, addr4, addr5, addr6, addr7] = await ethers.getSigners();
     let userList = [];
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
         userList.push(addr6.getAddress());
     }
     let kolWithUsers = [

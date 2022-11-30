@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.0;
 
-
 /**
  * @title AD3lib contract
  * @dev The kol and user model of Ad3.
@@ -20,7 +19,7 @@ library AD3lib {
         //percentage of get
         uint8 ratio;
         //Payment stage
-        uint _paymentStage;
+        uint256 _paymentStage;
     }
 
     ///kol and users model
@@ -29,5 +28,12 @@ library AD3lib {
         address _address;
         // user address
         address[] users;
+    }
+
+    ///ECDSA signature of prize
+    struct PrizeSignature {
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
     }
 }

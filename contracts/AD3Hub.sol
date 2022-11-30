@@ -27,13 +27,13 @@ contract AD3Hub is Ownable {
                                 EVENTS
     //////////////////////////////////////////////////////////////*/
 
-    event Withdraw(address indexed advertiser);
+    event CreateCampaign(address indexed advertiser, uint256 indexed totalBudget);
+
+    event PayFixFee(address indexed advertiser);
 
     event Pushpay(address indexed advertiser);
 
-    event Prepay(address indexed advertiser);
-
-    event PayContentFee(address indexed advertiser);
+    event Withdraw(address indexed advertiser);
 
 
     /*//////////////////////////////////////////////////////////////
@@ -41,6 +41,8 @@ contract AD3Hub is Ownable {
     //////////////////////////////////////////////////////////////*/
 
     address public _paymentToken;
+
+    address public _trustedSigner;
 
     // Mapping from Advertiser address to campaign address
     mapping(address => mapping(uint64 => address)) private campaigns;
@@ -69,7 +71,7 @@ contract AD3Hub is Ownable {
         require(userFee > 0, "AD3: userFee <= 0");
 
         //create campaign
-        Campaign xcampaign = new Campaign(kols, userFee, _paymentToken);
+        Campaign xcampaign = new Campaign(kols, userFee, _paymentToken, _trustedSigner);
 
         //init amount
         IERC20(_paymentToken).safeTransferFrom(
@@ -83,6 +85,7 @@ contract AD3Hub is Ownable {
         length++;
         campaigns[msg.sender][length] = address(xcampaign);
         campaignIds[msg.sender] = length;
+        emit CreateCampaign(msg.sender, totalBudget);
         return address(xcampaign);
     }
 
@@ -106,8 +109,8 @@ contract AD3Hub is Ownable {
             instance := create(0, proxy, 0x37)
         }
         
-        //init kols,other params
-        (bool success, ) = instance.call(abi.encodeWithSignature("init(address,address,string,string)", address(this), userFee));
+        //init kols
+        (bool success, ) = instance.call(abi.encodeWithSignature("init(address,address,string,string)", address(this), userFee, _trustedSigner));
         require(success == true,"createCampaign init fail");
 
         //init amount
@@ -121,6 +124,7 @@ contract AD3Hub is Ownable {
         uint64 length = campaignIds[msg.sender];
         campaignIds[msg.sender] = length++;
         campaigns[msg.sender][length] = address(instance);
+        emit CreateCampaign(msg.sender, totalBudget);
         return address(instance);
     }
 
@@ -141,7 +145,7 @@ contract AD3Hub is Ownable {
         bool payContentFeeSuccess = Campaign(campaigns[advertiser][campaignId]).payfixFee(kols);
         require(payContentFeeSuccess, "AD3: payContentFee failured");
 
-        emit PayContentFee(msg.sender);
+        emit PayFixFee(msg.sender);
     }
 
     /**
@@ -157,7 +161,6 @@ contract AD3Hub is Ownable {
         bool pushPaySuccess = Campaign(campaigns[advertiser][campaignId]).pushPay(kols);
         require(pushPaySuccess, "AD3: pushPay failured");
         emit Pushpay(advertiser);
-
     }
 
     /**
@@ -194,6 +197,23 @@ contract AD3Hub is Ownable {
      **/
     function getPaymentToken() external view returns (address){
         return _paymentToken;
+    }
+
+    /**
+     * @dev Set trustedSigner of campaign.
+     * @param trustedSigner address of trustedSigner
+     **/
+    function setTrustedSigner(address trustedSigner) external onlyOwner{
+        require(trustedSigner != address(0), "AD3Hub: trustedSigner is zero address");
+        _trustedSigner = trustedSigner;
+    }
+
+    /**
+     * @dev Get trustedSigner of campaign.
+     * @return trustedSigner address of trustedSigner
+     **/
+    function getTrustedSigner() external view returns (address){
+        return _trustedSigner;
     }
 
 

@@ -25,6 +25,9 @@ async function main() {
 
 
   await ad3Hub.setPaymentToken(token.address);
+  
+  await ad3Hub.setTrustedSigner(deployer.address);
+
 }
 
 

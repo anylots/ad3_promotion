@@ -20,11 +20,16 @@ import "./libs/AD3lib.sol";
 contract Campaign is Ownable {
     using SafeTransferLib for IERC20;
 
+    event ClaimPrize(address indexed user,uint256 indexed amount);
+
     mapping(address => AD3lib.kol) private _kolStorages;
     address private _ad3hub;
-    uint256 public _serviceCharge = 5;
     uint public _userFee;
     address public _paymentToken;
+
+    address private _trustedSigner;
+    mapping(address => bool) hasClaimed;
+
 
     modifier onlyAd3Hub() {
         require(
@@ -43,17 +48,19 @@ contract Campaign is Ownable {
     constructor(
         AD3lib.kol[] memory kols,
         uint256 userFee,
-        address paymentToken
+        address paymentToken,
+        address trustedSigner
     ) payable {
         _ad3hub = msg.sender;
         _userFee = userFee;
         _paymentToken = paymentToken;
+        _trustedSigner = trustedSigner;
         for (uint64 i = 0; i < kols.length; i++) {
             AD3lib.kol memory kol = kols[i];
             require(kol._address != address(0), "AD3: kol_address is zero address");
             require(kol.fixedFee > 0, "AD3: kol fixedFee <= 0");
             require(kol.ratio >= 0, "AD3: kol ratio < 0");
-            require(kol.ratio < 100, "AD3: kol ratio >= 100");
+            require(kol.ratio <= 100, "AD3: kol ratio > 100");
 
             _kolStorages[kol._address] = kol;
         }
@@ -94,19 +101,24 @@ contract Campaign is Ownable {
             require(users.length > 0, "AD3: users list is empty");
             AD3lib.kol memory kol = _kolStorages[kolWithUsers._address];
 
-            // pay for kol
-            IERC20(_paymentToken).safeTransfer(kol._address, (users.length * _userFee * kol.ratio) /100 );
-            uint256 user_amount = _userFee * (100 - kol.ratio) / 100;
-            for (uint64 index = 0; index < users.length; index++) {
-                address userAddress = users[index];
-                require(userAddress != address(0), "user_address is zero address");
-
-                // pay for user
-                IERC20(_paymentToken).safeTransfer(userAddress, user_amount);
+            if(kol.ratio == 100){
+                //pay for kol.
+                IERC20(_paymentToken).safeTransfer(kol._address, users.length * _userFee);
+            }else{
+                //pay for kol and users.
+                IERC20(_paymentToken).safeTransfer(kol._address, (users.length * _userFee * kol.ratio) /100 );
+                uint256 user_amount = _userFee * (100 - kol.ratio) / 100;
+                for (uint64 index = 0; index < users.length; index++) {
+                    address userAddress = users[index];
+                    require(userAddress != address(0), "user_address is zero address");
+                    // pay for user
+                    IERC20(_paymentToken).safeTransfer(userAddress, user_amount);
+                }
             }
         }
         return true;
     }
+
 
     /**
      * @dev Withdraw the remaining funds to advertiser.
@@ -120,6 +132,40 @@ contract Campaign is Ownable {
         return true;
     }
 
+
+        /**
+     * @dev claim user prize.
+     * @param signature ECDSA signature of prize
+     * @param amount The campaign's creater or owner
+     **/
+    function claimUserPrize(AD3lib.PrizeSignature memory signature, uint256 amount) external {
+        require(hasClaimed[msg.sender] == false, "Repeated claim");
+        require(amount <= _userFee, "Amount invalid.");
+        
+        address signer = ecrecover(_createMessageDigest(address(this), msg.sender, amount), signature.v, signature.r, signature.s);
+        require(_trustedSigner == signer, "PrizeSignature invalid.");
+
+        require(IERC20(_paymentToken).transfer(msg.sender, amount));
+        hasClaimed[msg.sender] = true;
+
+        emit ClaimPrize(msg.sender, amount);
+    }
+
+    /**
+     * @dev _createMessageDigest.
+     * @param _campaign campaign address
+     * @param _user user address
+     * @param _amount prize amount for claim
+     **/
+    function _createMessageDigest(address _campaign, address _user, uint256 _amount) internal pure returns (bytes32) {
+        return keccak256(
+            abi.encodePacked(
+                "\x19Ethereum Signed Message:\n32",
+                keccak256(abi.encodePacked(_campaign, _user, _amount))
+            )
+    );
+}  
+
     /**
      * @dev Query campaign remain balance.
      **/
@@ -128,13 +174,4 @@ contract Campaign is Ownable {
         return balance;
     }
 
-    /**
-     * @dev setServiceCharge.
-     * @param value The percentage ServiceCharge
-     **/
-    function setServiceCharge(uint8 value) public onlyOwner {
-        require(value > 0,"AD3: serviceCharge <= 0");
-        require(value <= 10,"AD3: serviceCharge > 10");
-        _serviceCharge = value;
-    }
 }

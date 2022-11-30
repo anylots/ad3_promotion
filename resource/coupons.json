@@ -1,0 +1,26 @@
+[
+    {
+        "wallet": "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
+        "r": "0x911932c0966e1a9b2ae782986bb9bdb905427f6900b8ecb0d0ab5dc4619dce26",
+        "s": "0x316d5665975893c67b676e2b2efe4dd9cff934a3a980f2f8182f2d8faba6e428",
+        "v": 27
+    },
+    {
+        "wallet": "0xdD2FD4581271e230360230F9337D5c0430Bf44C0",
+        "r": "0x6849ed983f9ec9a7d7b61ad63ea1376a7171e0b730ce9d7628afdb56e97b5483",
+        "s": "0x1e99dc341acfa592d854a93e8bba7c03d5a1168a93a9744595aef56145e1566c",
+        "v": 27
+    },
+    {
+        "wallet": "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
+        "r": "0x83e027024a1265acd999db775e51cea65444140fc53a17ce00b24ff96e274590",
+        "s": "0x01743f60b6ae6a5cdbdd203a3e52ed6d058a41611c7ed1e566f2763e97554bf9",
+        "v": 28
+    },
+    {
+        "wallet": "0x2546BcD3c84621e976D8185a91A922aE77ECEc30",
+        "r": "0xa5e4971cb0255747a6e450e8a9e30e07ac1fd958f6efd34fb0c8e2e59d285d85",
+        "s": "0x5ed38633a59397e33aa7862d0e17df07391c65667f8de06eee6cd5aa22be6fb6",
+        "v": 27
+    }
+]

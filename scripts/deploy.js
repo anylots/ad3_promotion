@@ -19,6 +19,8 @@ async function main() {
   console.log("ad3Hub address:", ad3Hub.address);
 
   await ad3Hub.setPaymentToken(usdt_address);
+
+  await ad3Hub.setTrustedSigner(deployer.address);
 }
 
 
