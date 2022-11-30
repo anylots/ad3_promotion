@@ -1,11 +1,25 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Campaign.sol";
 
 
+/**
+ * @title AD3Hub contract
+ * @dev Main point of interaction with an Ad3 protocol's campaign manage
+ * - Advertisers can:
+ *   # CreateCampaign
+ *   # GetCampaignAddress
+ * - Owner can:
+ *   # PayfixFee
+ *   # Pushpay 
+ *   # Withdraw
+ * - All admin functions are callable by the deployer
+ *
+ * @author Ad3
+ **/
 contract AD3Hub is Ownable {
     using SafeTransferLib for IERC20;
 
@@ -21,6 +35,11 @@ contract AD3Hub is Ownable {
 
     event PayContentFee(address indexed advertiser);
 
+
+    /*//////////////////////////////////////////////////////////////
+                                STORGE
+    //////////////////////////////////////////////////////////////*/
+
     address private _paymentToken;
 
     // Mapping from Advertiser address to campaign address
@@ -29,9 +48,16 @@ contract AD3Hub is Ownable {
     mapping(address => uint64) private campaignIds;
 
 
+    /*//////////////////////////////////////////////////////////////
+                        ADVERTISER OPERATIONS
+    //////////////////////////////////////////////////////////////*/
+
     /**
-     * 
-     */
+     * @dev Create an Campaign.
+     * @param kols The list of kol
+     * @param totalBudget The amount of campaign
+     * @param userFee amount to be awarded to each user
+     **/
     function createCampaign(
         AD3lib.kol[] memory kols,
         uint256 totalBudget,
@@ -59,29 +85,17 @@ contract AD3Hub is Ownable {
         return address(xcampaign);
     }
 
-
-    //The byte codes of EIP-1167 standard are as follows:
-    //3d602d80600a3d3981f3_363d3d37_3d3d3d363d73_bebebebebebebebebebebebebebebebebebebebe_5a_f4_3d82803e_903d91602b57fd5bf3
-    //notes:
-    //3d602d80600a3d3981f3 Copying runtime code into memory
-    //---------------proxy contract----------------
-    //363d3d37 Get the calldata
-    //3d3d3d363d73 prepare input and output parmeter
-    //bebebebebebebebebebebebebebebebebebebebe address of impl
-    //5a gas
-    //f4 Delegating the call
-    //3d82803e Get the result of an external call
-    //903d91602b57fd5bf3 return or revert
-    //---------------proxy contract----------------
-
     /**
-     * @dev Add campaign address to campaign mapping.
-     * @param budget The address of the underlying nft used as collateral
-     */
-    function createCampaignLowGas(address[] memory kols, uint256 budget) external returns (address instance) {
+     * @dev Create an campaign with Minimal Proxy.
+     * @param kols The list of kol
+     * @param totalBudget The amount of campaign
+     * @param userFee amount to be awarded to each user
+     **/
+    function createWithMinimalProxy(address[] memory kols, uint256 totalBudget, uint256 userFee) external returns (address instance) {
         require(kols.length > 0,"kols is empty");
 
         /// @solidity memory-safe-assembly
+
         //create campaign
         assembly{
             let proxy :=mload(0x40)
@@ -92,14 +106,14 @@ contract AD3Hub is Ownable {
         }
         
         //init kols,other params
-        (bool success, ) = instance.call(abi.encodeWithSignature("init(address,address,string,string)", address(this)));
+        (bool success, ) = instance.call(abi.encodeWithSignature("init(address,address,string,string)", address(this), userFee));
         require(success == true,"createCampaign init fail");
 
         //init amount
         IERC20(_paymentToken).safeTransferFrom(
             msg.sender,
             address(instance),
-            budget
+            totalBudget
         );
 
         //register to mapping
@@ -109,10 +123,16 @@ contract AD3Hub is Ownable {
         return address(instance);
     }
 
+    /*//////////////////////////////////////////////////////////////
+                        OWNER OPERATIONS
+    //////////////////////////////////////////////////////////////*/
 
     /**
-     * @dev payContentFee triggered by ad3hub
-     */
+     * @dev Pay fixFee to kols.
+     * @param kols The address list of kol
+     * @param advertiser The campaign's creater or owner
+     * @param campaignId index in advertiser's campaign list
+     **/
     function payfixFee(address[] memory kols, address advertiser, uint64 campaignId) external onlyOwner{
         uint256 balance = IERC20(_paymentToken).balanceOf(campaigns[advertiser][campaignId]);
         require(balance > 0, 'AD3: balance <= 0');
@@ -124,9 +144,10 @@ contract AD3Hub is Ownable {
     }
 
     /**
-     * @dev Withdraws an `amount` of underlying asset into the reserve, burning the equivalent bTokens owned.
-     * - E.g. User deposits 100 USDC and gets in return 100 bUSDC
-     * @param kols kols with his users list
+     * @dev Pay to users and kols.
+     * @param advertiser The campaign's creater or owner
+     * @param campaignId index in advertiser's campaign list
+     * @param kols The address list of kolWithUsers
      **/
     function pushPay(address advertiser, uint64 campaignId, AD3lib.kolWithUsers[] calldata kols) external onlyOwner{
         uint256 balance = IERC20(_paymentToken).balanceOf(campaigns[advertiser][campaignId]);
@@ -139,9 +160,9 @@ contract AD3Hub is Ownable {
     }
 
     /**
-     * @dev Withdraws an `amount` of underlying asset into the reserve, burning the equivalent bTokens owned.
-     * - E.g. User deposits 100 USDC and gets in return 100 bUSDC
-     * @param advertiser The address of the underlying nft used as collateral
+     * @dev Withdraw the remaining funds to advertiser.
+     * @param advertiser The campaign's creater or owner
+     * @param campaignId index in advertiser's campaign list
      **/
     function withdraw(address advertiser, uint64 campaignId) external onlyOwner{
         require(advertiser != address(0), "AD3Hub: advertiser is zero address");
@@ -154,17 +175,30 @@ contract AD3Hub is Ownable {
         bool withdrawSuccess = Campaign(campaigns[advertiser][campaignId]).withdraw(advertiser);
         require(withdrawSuccess, "AD3: withdraw failured");
         emit Withdraw(advertiser);
-
     }
 
+
+    /**
+     * @dev Set Payment Token of campaign.
+     * @param token address of token
+     **/
     function setPaymentToken(address token) external onlyOwner{
         require(token != address(0), "AD3Hub: paymentToken is zero address");
         _paymentToken = token;
     }
 
+    /**
+     * @dev Get Payment Token of campaign.
+     * @return token address of token
+     **/
     function getPaymentToken() external view returns (address){
         return _paymentToken;
     }
+
+
+    /*//////////////////////////////////////////////////////////////
+                        PUBLIC OPERATIONS
+    //////////////////////////////////////////////////////////////*/
 
     /**
      * @dev get Address of Campaign
@@ -176,8 +210,8 @@ contract AD3Hub is Ownable {
     }
 
     /**
-     * @dev get Address of Campaign
-     * @param advertiser The address of the advertiser who create campaign
+     * @dev get Address list of Campaign
+     * @param advertiser The address list of the advertiser who create campaign
      **/
     function getCampaignAddressList(address advertiser) public view returns(address[] memory){
         require(advertiser != address(0), "AD3Hub: advertiser is zero address");

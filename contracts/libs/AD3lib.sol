@@ -1,10 +1,17 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.0;
 
 
+/**
+ * @title AD3lib contract
+ * @dev The kol and user model of Ad3.
+ *
+ * @author Ad3
+ **/
 library AD3lib {
 
+    ///kol model
     struct kol {
         //kol address
         address _address;
@@ -16,6 +23,7 @@ library AD3lib {
         uint _paymentStage;
     }
 
+    ///kol and users model
     struct kolWithUsers {
         // Kol address
         address _address;

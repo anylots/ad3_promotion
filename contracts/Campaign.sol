@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.0;
 
-// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "./interfaces/IERC20.sol";
 import {SafeTransferLib} from "./libs/SafeTransferLib.sol";
@@ -10,13 +9,14 @@ import "./libs/AD3lib.sol";
 
 
 /**
- * @title TokenMintERC20Token
- * @author TokenMint (visit https://tokenmint.io)
+ * @title Campaign contract
+ * @dev Fund and crowd management logic of Ad3 protocol.
+ * - All admin functions are callable by the ad3Hub
+ * - Users can:
+ *   # Query remain balance
  *
- * @dev Standard ERC20 token with burning and optional functions implemented.
- * For full specification of ERC-20 standard see:
- * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
- */
+ * @author Ad3
+ **/
 contract Campaign is Ownable {
     using SafeTransferLib for IERC20;
 
@@ -36,8 +36,10 @@ contract Campaign is Ownable {
 
     /**
      * @dev Constructor.
-     * @param kols number of decimal places of one token unit, 18 is widely used
-     */
+     * @param kols The list of kol
+     * @param userFee amount to be awarded to each user
+     * @param paymentToken address of paymentToken
+     **/
     constructor(
         AD3lib.kol[] memory kols,
         uint256 userFee,
@@ -62,6 +64,10 @@ contract Campaign is Ownable {
         return balance;
     }
 
+    /**
+     * @dev Pay fixFee to kols.
+     * @param kols The address list of kol
+     **/
     function payfixFee(address[] memory kols) public onlyOwner returns (bool) {
 
         for (uint64 i = 0; i < kols.length; i++) {
@@ -76,6 +82,10 @@ contract Campaign is Ownable {
         return true;
     }
 
+    /**
+     * @dev Pay to users and kols.
+     * @param kols The address list of kolWithUsers
+     **/
     function pushPay(AD3lib.kolWithUsers[] memory kols) public onlyOwner returns (bool) {
         require(kols.length > 0,"AD3: kols of pay is empty");
 
@@ -103,6 +113,10 @@ contract Campaign is Ownable {
         return true;
     }
 
+    /**
+     * @dev Withdraw the remaining funds to advertiser.
+     * @param advertiser The campaign's creater or owner
+     **/
     function withdraw(address advertiser) public onlyOwner returns (bool) {
         uint256 balance = IERC20(_paymentToken).balanceOf(address(this));
 
@@ -111,6 +125,10 @@ contract Campaign is Ownable {
         return true;
     }
 
+    /**
+     * @dev setServiceCharge.
+     * @param value The percentage ServiceCharge
+     **/
     function setServiceCharge(uint8 value) public onlyOwner {
         require(value > 0,"AD3: serviceCharge <= 0");
         require(value <= 10,"AD3: serviceCharge > 10");
