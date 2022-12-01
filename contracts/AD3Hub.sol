@@ -70,7 +70,7 @@ contract AD3Hub is Ownable {
      **/
     function createCampaign(AD3lib.kol[] memory kols, uint256 totalBudget, uint256 userFee) external 
     returns(address instance){
-        require(kols.length > 0,"kols is empty.");
+        require(kols.length > 0, "kols is empty.");
 
         bytes20 impl = bytes20(_campaignImpl);
 
@@ -117,7 +117,7 @@ contract AD3Hub is Ownable {
      **/
     function payfixFee(address[] memory kols, address advertiser, uint64 campaignId) external onlyOwner{
         uint256 balance = IERC20(_paymentToken).balanceOf(campaigns[advertiser][campaignId]);
-        require(balance > 0, 'AD3: balance <= 0');
+        require(balance > 0, "AD3: balance <= 0");
 
         bool payContentFeeSuccess = Campaign(campaigns[advertiser][campaignId]).payfixFee(kols);
         require(payContentFeeSuccess, "AD3: payContentFee failured.");
