@@ -41,10 +41,13 @@ contract AD3Hub is Ownable {
                                 STORAGE
     //////////////////////////////////////////////////////////////*/
 
+    // Campaign budget token
     address public _paymentToken;
 
+    // The ecdsa signer used to verify claim for user prizes
     address public _trustedSigner;
 
+    // Logical implementation of campaign
     address private _campaignImpl;
 
     // Mapping from Advertiser address to campaign address
