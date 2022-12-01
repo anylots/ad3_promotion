@@ -23,6 +23,11 @@ async function main() {
   await token.deployed();
   console.log("token address:", token.address);
 
+  const Campaign = await ethers.getContractFactory("Campaign");
+  const campaign = await Campaign.deploy();
+  await campaign.deployed();
+
+  await ad3Hub.setCampaignImpl(campaign.address);
 
   await ad3Hub.setPaymentToken(token.address);
   

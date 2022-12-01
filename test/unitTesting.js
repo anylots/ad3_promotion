@@ -28,6 +28,17 @@ describe("Ad3 contract", function () {
   }
 
 
+  async function deployCampaignImpl() {
+    // Get the ContractFactory and Signers here.
+    const Campaign = await ethers.getContractFactory("Campaign");
+
+    const campaign = await Campaign.deploy();
+    await campaign.deployed();
+    // Fixtures can return anything you consider useful for your tests
+    return { campaign };
+  }
+
+
   //kols for deployment
   async function getKolsFixtrue() {
     const [owner, addr1, addr2] = await ethers.getSigners();
@@ -103,6 +114,10 @@ describe("Ad3 contract", function () {
       const { ad3Hub, owner } = await loadFixture(deployAD3HubFixture);
       const { token } = await deployPaymentToken();
       await ad3Hub.setPaymentToken(token.address);
+
+      const { campaign } = await deployCampaignImpl();
+      await ad3Hub.setCampaignImpl(campaign.address);
+
       await token.approve(ad3Hub.address, 100000);
 
       //Create campaign
@@ -142,6 +157,10 @@ describe("Ad3 contract", function () {
       const { ad3Hub, owner } = await loadFixture(deployAD3HubFixture);
       const { token } = await deployPaymentToken();
       await ad3Hub.setPaymentToken(token.address);
+
+      const { campaign } = await deployCampaignImpl();
+      await ad3Hub.setCampaignImpl(campaign.address);
+
       await token.approve(ad3Hub.address, 100000);
       let kols = await getKolsFixtrue();
       await ad3Hub.createCampaign(kols, 100000, 10);
@@ -175,6 +194,10 @@ describe("Ad3 contract", function () {
       const { ad3Hub, owner } = await loadFixture(deployAD3HubFixture);
       const { token } = await deployPaymentToken();
       await ad3Hub.setPaymentToken(token.address);
+
+      const { campaign } = await deployCampaignImpl();
+      await ad3Hub.setCampaignImpl(campaign.address);
+
       await token.approve(ad3Hub.address, 100000);
       let kols = await getKolsFixtrue();
       await ad3Hub.createCampaign(kols, 100000, 10);

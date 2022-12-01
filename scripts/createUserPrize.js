@@ -30,7 +30,7 @@ async function getSignature(signer, campaignAddress, account, amount) {
 
 async function main() {
     const signer = new ethers.Wallet(privateKey);
-    let campaignAddress = '0xa16E02E87b7454126E5E10d957A927A7F5B5d2be';
+    let campaignAddress = '0x94099942864EA81cCF197E9D71ac53310b1468D8';
     let user_addresses = [
         '0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199',
         '0xdD2FD4581271e230360230F9337D5c0430Bf44C0',

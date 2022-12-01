@@ -18,6 +18,12 @@ async function main() {
   await ad3Hub.deployed();
   console.log("ad3Hub address:", ad3Hub.address);
 
+  const Campaign = await ethers.getContractFactory("Campaign");
+  const campaign = await Campaign.deploy();
+  await campaign.deployed();
+
+  await ad3Hub.setCampaignImpl(campaign.address);
+
   await ad3Hub.setPaymentToken(usdt_address);
 
   await ad3Hub.setTrustedSigner(deployer.address);

@@ -17,13 +17,16 @@ async function pushPay() {
     // Connect a wallet to localhost
     let customHttpProvider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
 
-    
+    let campaignImpl = await deployCampaignImpl();
+    console.log("campaignImpl: "+ campaignImpl);
+
     const { ad3Hub, owner } = await deployAD3HubFixture();
     console.log(owner.address);
 
     const { token } = await deployPaymentToken();
     console.log("usdtAddress: "+ token.address);
 
+    await ad3Hub.setCampaignImpl(campaignImpl);
     await ad3Hub.setPaymentToken(token.address);
     await ad3Hub.setTrustedSigner(owner.address);
 
@@ -93,8 +96,26 @@ async function deployAD3HubFixture() {
 
     const ad3Hub = await AD3Hub.deploy();
     await ad3Hub.deployed();
+    console.log("AD3Hub.deploy hash:"+ ad3Hub.deployTransaction.hash);
+
+    let customHttpProvider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
+    let info = await customHttpProvider.getTransactionReceipt(ad3Hub.deployTransaction.hash);
+    console.log("AD3Hub.deploy gas used:" + info.gasUsed);
     // Fixtures can return anything you consider useful for your tests
     return { ad3Hub, owner, addr1, addr2 };
+}
+
+async function deployCampaignImpl() {
+    // Get the ContractFactory and Signers here.
+    const Campaign = await ethers.getContractFactory("Campaign");
+
+    const campaign = await Campaign.deploy();
+    await campaign.deployed();
+    let customHttpProvider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
+    let info = await customHttpProvider.getTransactionReceipt(campaign.deployTransaction.hash);
+    console.log("Campaign.deploy() gas used:" + info.gasUsed);
+    // Fixtures can return anything you consider useful for your tests
+    return campaign.address;
 }
 
 // token of payment

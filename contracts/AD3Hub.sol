@@ -44,6 +44,8 @@ contract AD3Hub is Ownable {
 
     address public _trustedSigner;
 
+    address private _campaignImpl;
+
     // Mapping from Advertiser address to campaign address
     mapping(address => mapping(uint64 => address)) private campaigns;
 
@@ -56,76 +58,43 @@ contract AD3Hub is Ownable {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @dev Create an Campaign.
-     * @param kols The list of kol
-     * @param totalBudget The amount of campaign
-     * @param userFee amount to be awarded to each user
-     **/
-    function createCampaign(
-        AD3lib.kol[] memory kols,
-        uint256 totalBudget,
-        uint256 userFee
-    ) external returns (address) {
-        require(kols.length > 0, "AD3: kols is empty");
-        require(totalBudget > 0, "AD3: totalBudget > 0");
-        require(userFee > 0, "AD3: userFee <= 0");
-
-        //create campaign
-        Campaign xcampaign = new Campaign(kols, userFee, _paymentToken, _trustedSigner);
-
-        //init amount
-        IERC20(_paymentToken).safeTransferFrom(
-            msg.sender,
-            address(xcampaign),
-            totalBudget
-        );
-
-        //register to mapping
-        uint64 length = campaignIds[msg.sender];
-        length++;
-        campaigns[msg.sender][length] = address(xcampaign);
-        campaignIds[msg.sender] = length;
-        emit CreateCampaign(msg.sender, totalBudget);
-        return address(xcampaign);
-    }
-
-    /**
      * @dev Create an campaign with Minimal Proxy.
      * @param kols The list of kol
      * @param totalBudget The amount of campaign
      * @param userFee amount to be awarded to each user
      **/
-    function createWithMinimalProxy(address[] memory kols, uint256 totalBudget, uint256 userFee) external returns (address instance) {
+    function createCampaign(AD3lib.kol[] memory kols, uint256 totalBudget, uint256 userFee) external returns (address instance) {
         require(kols.length > 0,"kols is empty");
 
+        bytes20 impl = bytes20(_campaignImpl);
         /// @solidity memory-safe-assembly
 
         //create campaign
         assembly{
             let proxy :=mload(0x40)
             mstore(proxy, 0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000000000000000000000)
-            mstore(add(proxy, 0x14), 0xdAC17F958D2ee523a2206206994597C13D831ec7)
+            mstore(add(proxy, 0x14), impl)
             mstore(add(proxy, 0x28), 0x5af43d82803e903d91602b57fd5bf30000000000000000000000000000000000)
             instance := create(0, proxy, 0x37)
         }
-        
-        //init kols
-        (bool success, ) = instance.call(abi.encodeWithSignature("init(address,address,string,string)", address(this), userFee, _trustedSigner));
-        require(success == true,"createCampaign init fail");
+         require(instance != address(0), "Failed to create campaign clone");
 
+        //init campaign   
+        Campaign(instance).init(kols, userFee, _paymentToken, _trustedSigner);
         //init amount
         IERC20(_paymentToken).safeTransferFrom(
             msg.sender,
-            address(instance),
+            instance,
             totalBudget
         );
 
         //register to mapping
         uint64 length = campaignIds[msg.sender];
-        campaignIds[msg.sender] = length++;
-        campaigns[msg.sender][length] = address(instance);
+        length++;
+        campaigns[msg.sender][length] = instance;
+        campaignIds[msg.sender] = length;
         emit CreateCampaign(msg.sender, totalBudget);
-        return address(instance);
+        return instance;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -214,6 +183,15 @@ contract AD3Hub is Ownable {
      **/
     function getTrustedSigner() external view returns (address){
         return _trustedSigner;
+    }
+
+    /**
+     * @dev Set address of campaignImpl.
+     * @param campaign address of campaignImpl
+     **/
+    function setCampaignImpl(address campaign) external onlyOwner{
+        require(campaign != address(0), "AD3Hub: campaignImpl is zero address");
+        _campaignImpl = campaign;
     }
 
 

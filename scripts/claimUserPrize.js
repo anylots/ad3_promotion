@@ -10,8 +10,8 @@ async function main() {
 }
 
 async function claimPrize() {
-    let campaignAddress = '0xa16E02E87b7454126E5E10d957A927A7F5B5d2be';
-    let usdtAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
+    let campaignAddress = '0x94099942864EA81cCF197E9D71ac53310b1468D8';
+    let usdtAddress = '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318';
 
     let privateKey = "0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0";
     let customHttpProvider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
@@ -33,7 +33,8 @@ async function claimPrize() {
     console.log("balance before claim:" + balance);
 
     let result = await Campaign.claimUserPrize(fetchCoupon(signer.address), 10);
-    console.log("result:" + result.hash);
+    let info = await customHttpProvider.getTransactionReceipt(result.hash);
+    console.log("claimUserPrize gas used:" + info.gasUsed);
 
     balance = await USDT.balanceOf(signer.getAddress());
     console.log("balance after claim:" + balance);

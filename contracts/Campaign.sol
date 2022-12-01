@@ -22,6 +22,7 @@ contract Campaign is Ownable {
 
     event ClaimPrize(address indexed user,uint256 indexed amount);
 
+    bool private _initialized;
     mapping(address => AD3lib.kol) private _kolStorages;
     address private _ad3hub;
     uint public _userFee;
@@ -45,12 +46,15 @@ contract Campaign is Ownable {
      * @param userFee amount to be awarded to each user
      * @param paymentToken address of paymentToken
      **/
-    constructor(
+    function init(
         AD3lib.kol[] memory kols,
         uint256 userFee,
         address paymentToken,
         address trustedSigner
-    ) payable {
+    ) public {
+        require(_initialized == false, "AD3: campaign is already initialized");
+
+        _initialized = true;
         _ad3hub = msg.sender;
         _userFee = userFee;
         _paymentToken = paymentToken;
@@ -70,7 +74,7 @@ contract Campaign is Ownable {
      * @dev Pay fixFee to kols.
      * @param kols The address list of kol
      **/
-    function payfixFee(address[] memory kols) public onlyOwner returns (bool) {
+    function payfixFee(address[] memory kols) public onlyAd3Hub returns (bool) {
 
         for (uint64 i = 0; i < kols.length; i++) {
             address kolAddress = kols[i];
@@ -88,7 +92,7 @@ contract Campaign is Ownable {
      * @dev Pay to users and kols.
      * @param kols The address list of kolWithUsers
      **/
-    function pushPay(AD3lib.kolWithUsers[] memory kols) public onlyOwner returns (bool) {
+    function pushPay(AD3lib.kolWithUsers[] memory kols) public onlyAd3Hub returns (bool) {
         require(kols.length > 0,"AD3: kols of pay is empty");
 
         uint256 balance = IERC20(_paymentToken).balanceOf(address(this));
@@ -124,7 +128,7 @@ contract Campaign is Ownable {
      * @dev Withdraw the remaining funds to advertiser.
      * @param advertiser The campaign's creater or owner
      **/
-    function withdraw(address advertiser) public onlyOwner returns (bool) {
+    function withdraw(address advertiser) public onlyAd3Hub returns (bool) {
         uint256 balance = IERC20(_paymentToken).balanceOf(address(this));
 
         require(IERC20(_paymentToken).transfer(advertiser, balance));
