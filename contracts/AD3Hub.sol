@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0 license
 
 pragma solidity ^0.8.0;
 
@@ -21,7 +21,7 @@ import "./Campaign.sol";
  * @author Ad3
  **/
 contract AD3Hub is Ownable {
-    //make the transfer lower gas-used and more safety
+    //make the transfer lower gas-used and more safety.
     using SafeTransferLib for IERC20;
 
     /*//////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ contract AD3Hub is Ownable {
                                 STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    // Campaign budget token
+    // Campaign budget token, used to prepare campaign funds and pay to kol and user.
     address public _paymentToken;
 
     // The ecdsa signer used to verify claim for user prizes
@@ -50,10 +50,11 @@ contract AD3Hub is Ownable {
     // Logical implementation of campaign
     address private _campaignImpl;
 
-    // Mapping from Advertiser address to campaign address
+    // Mapping from Advertiser address to campaign addresses
     mapping(address => mapping(uint64 => address)) private campaigns;
 
-    // Mapping from campaign address to the lastest campaignId
+    // Mapping from campaign address to the lastest campaignId, 
+    // campaignId should be incremented from 1.
     mapping(address => uint64) private campaignIds;
 
 
@@ -69,31 +70,34 @@ contract AD3Hub is Ownable {
      **/
     function createCampaign(AD3lib.kol[] memory kols, uint256 totalBudget, uint256 userFee) external 
     returns(address instance){
-        require(kols.length > 0,"kols is empty");
+        require(kols.length > 0,"kols is empty.");
 
         bytes20 impl = bytes20(_campaignImpl);
-        /// @solidity memory-safe-assembly
 
-        //create campaign
+        /// @solidity memory-safe-assembly
         assembly{
+            // Load free memory point.
             let proxy :=mload(0x40)
+            // Copying runtime code into memory, get the calldata, prepare input and output parmeter.
             mstore(proxy, 0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000000000000000000000)
+            // Copying impl address into memory.
             mstore(add(proxy, 0x14), impl)
+            // Delegating the call.
             mstore(add(proxy, 0x28), 0x5af43d82803e903d91602b57fd5bf30000000000000000000000000000000000)
             instance := create(0, proxy, 0x37)
         }
-        require(instance != address(0), "Failed to create campaign clone");
+        require(instance != address(0), "ERC1167: campaign create failed.");
 
-        //init campaign   
+        // init campaign   
         Campaign(instance).init(kols, userFee, _paymentToken, _trustedSigner);
-        //init amount
+        // init amount
         IERC20(_paymentToken).safeTransferFrom(
             msg.sender,
             instance,
             totalBudget
         );
 
-        //register to mapping
+        // save campaign to mapping
         uint64 lastest = campaignIds[msg.sender];
         lastest++;
         campaigns[msg.sender][lastest] = instance;
@@ -116,7 +120,7 @@ contract AD3Hub is Ownable {
         require(balance > 0, 'AD3: balance <= 0');
 
         bool payContentFeeSuccess = Campaign(campaigns[advertiser][campaignId]).payfixFee(kols);
-        require(payContentFeeSuccess, "AD3: payContentFee failured");
+        require(payContentFeeSuccess, "AD3: payContentFee failured.");
 
         emit PayFixFee(msg.sender);
     }
@@ -129,10 +133,10 @@ contract AD3Hub is Ownable {
      **/
     function pushPay(address advertiser, uint64 campaignId, AD3lib.kolWithUsers[] calldata kols) external onlyOwner{
         uint256 balance = IERC20(_paymentToken).balanceOf(campaigns[advertiser][campaignId]);
-        require(balance > 0,"AD3: pushPay insufficient funds");
+        require(balance > 0,"AD3: pushPay insufficient funds.");
 
         bool pushPaySuccess = Campaign(campaigns[advertiser][campaignId]).pushPay(kols);
-        require(pushPaySuccess, "AD3: pushPay failured");
+        require(pushPaySuccess, "AD3: pushPay failured.");
         emit Pushpay(advertiser);
     }
 
@@ -142,15 +146,15 @@ contract AD3Hub is Ownable {
      * @param campaignId index in advertiser's campaign list
      **/
     function withdraw(address advertiser, uint64 campaignId) external onlyOwner{
-        require(advertiser != address(0), "AD3Hub: advertiser is zero address");
+        require(advertiser != address(0), "AD3Hub: advertiser is zero address.");
 
         require(
             campaigns[advertiser][campaignId] != address(0),
-            "AD3Hub: advertiser not create campaign"
+            "AD3Hub: No such campaign"
         );
 
         bool withdrawSuccess = Campaign(campaigns[advertiser][campaignId]).withdraw(advertiser);
-        require(withdrawSuccess, "AD3: withdraw failured");
+        require(withdrawSuccess, "AD3: withdraw failured.");
         emit Withdraw(advertiser);
     }
 
@@ -160,7 +164,7 @@ contract AD3Hub is Ownable {
      * @param token address of token
      **/
     function setPaymentToken(address token) external onlyOwner{
-        require(token != address(0), "AD3Hub: paymentToken is zero address");
+        require(token != address(0), "AD3Hub: paymentToken is zero address.");
         _paymentToken = token;
     }
 
@@ -177,7 +181,7 @@ contract AD3Hub is Ownable {
      * @param trustedSigner address of trustedSigner
      **/
     function setTrustedSigner(address trustedSigner) external onlyOwner{
-        require(trustedSigner != address(0), "AD3Hub: trustedSigner is zero address");
+        require(trustedSigner != address(0), "AD3Hub: trustedSigner is zero address.");
         _trustedSigner = trustedSigner;
     }
 
@@ -194,7 +198,7 @@ contract AD3Hub is Ownable {
      * @param campaign address of campaignImpl
      **/
     function setCampaignImpl(address campaign) external onlyOwner{
-        require(campaign != address(0), "AD3Hub: campaignImpl is zero address");
+        require(campaign != address(0), "AD3Hub: campaignImpl is zero address.");
         _campaignImpl = campaign;
     }
 
@@ -208,7 +212,7 @@ contract AD3Hub is Ownable {
      * @param advertiser The address of the advertiser who create campaign
      **/
     function getCampaignAddress(address advertiser, uint64 campaignId) public view returns(address){
-        require(advertiser != address(0), "AD3Hub: advertiser is zero address");
+        require(advertiser != address(0), "AD3Hub: advertiser is zero address.");
         return campaigns[advertiser][campaignId];
     }
 
@@ -217,7 +221,7 @@ contract AD3Hub is Ownable {
      * @param advertiser The address list of the advertiser who create campaign
      **/
     function getCampaignAddressList(address advertiser) public view returns(address[] memory){
-        require(advertiser != address(0), "AD3Hub: advertiser is zero address");
+        require(advertiser != address(0), "AD3Hub: advertiser is zero address.");
         uint64 lastest = campaignIds[advertiser];
         if(lastest == 0){
             revert();
