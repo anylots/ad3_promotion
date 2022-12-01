@@ -133,7 +133,7 @@ contract Campaign is Ownable {
     }
 
 
-        /**
+    /**
      * @dev claim user prize.
      * @param signature ECDSA signature of prize
      * @param amount The campaign's creater or owner
