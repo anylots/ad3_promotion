@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "./interfaces/IERC20.sol";
 import {SafeTransferLib} from "./libs/SafeTransferLib.sol";
 import "./libs/AD3lib.sol";
@@ -17,28 +16,55 @@ import "./libs/AD3lib.sol";
  *
  * @author Ad3
  **/
-contract Campaign is Ownable {
+contract Campaign {
+    //make the transfer lower gas-used and more safety
     using SafeTransferLib for IERC20;
+
+    /*//////////////////////////////////////////////////////////////
+                                EVENTS
+    //////////////////////////////////////////////////////////////*/
 
     event ClaimPrize(address indexed user,uint256 indexed amount);
 
+    /*//////////////////////////////////////////////////////////////
+                                STORAGE
+    //////////////////////////////////////////////////////////////*/
+
+    //campaign only init once
     bool private _initialized;
-    mapping(address => AD3lib.kol) private _kolStorages;
+
+    //budget amount for per user
+    uint256 public _userFee;
+
+    //address of ad3hub contract
     address private _ad3hub;
-    uint public _userFee;
+
+    //campaign budget token
     address public _paymentToken;
 
+    //the ecdsa signer used to verify claim for user prizes
     address private _trustedSigner;
+    
+    //the kol info saved in the storage
+    mapping(address => AD3lib.kol) private _kolStorages;
+
+    //the account has claimed
     mapping(address => bool) hasClaimed;
 
-
+    /**
+     *@dev Throws if called by any account other than the Ad3Hub.
+     */
     modifier onlyAd3Hub() {
         require(
             msg.sender == _ad3hub,
-            "The caller of this function must be a ad3hub"
+            "The caller must be ad3hub"
         );
         _;
     }
+
+    /*//////////////////////////////////////////////////////////////
+                           OWNER OPERATIONS
+    //////////////////////////////////////////////////////////////*/
 
     /**
      * @dev Constructor.
@@ -53,8 +79,8 @@ contract Campaign is Ownable {
         address trustedSigner
     ) public {
         require(_initialized == false, "AD3: campaign is already initialized");
-
         _initialized = true;
+
         _ad3hub = msg.sender;
         _userFee = userFee;
         _paymentToken = paymentToken;
@@ -79,7 +105,7 @@ contract Campaign is Ownable {
         for (uint64 i = 0; i < kols.length; i++) {
             address kolAddress = kols[i];
             AD3lib.kol memory kol = _kolStorages[kolAddress];
-            require(kol._paymentStage < 2, "AD3: prepay already done");
+            require(kol._paymentStage < 2, "AD3: payfixFee already done");
             
             kol._paymentStage++;
             //pay for kol
@@ -95,20 +121,16 @@ contract Campaign is Ownable {
     function pushPay(AD3lib.kolWithUsers[] memory kols) public onlyAd3Hub returns (bool) {
         require(kols.length > 0,"AD3: kols of pay is empty");
 
-        uint256 balance = IERC20(_paymentToken).balanceOf(address(this));
-        require(balance > 0,"AD3: comletePay insufficient funds");
-
         for (uint64 i = 0; i < kols.length; i++) {
             AD3lib.kolWithUsers memory kolWithUsers = kols[i];
-
             address[] memory users = kolWithUsers.users;
             require(users.length > 0, "AD3: users list is empty");
-            AD3lib.kol memory kol = _kolStorages[kolWithUsers._address];
 
-            if(kol.ratio == 100){
+            AD3lib.kol memory kol = _kolStorages[kolWithUsers._address];
+            if(kol.ratio == 100) {
                 //pay for kol.
                 IERC20(_paymentToken).safeTransfer(kol._address, users.length * _userFee);
-            }else{
+            } else {
                 //pay for kol and users.
                 IERC20(_paymentToken).safeTransfer(kol._address, (users.length * _userFee * kol.ratio) /100 );
                 uint256 user_amount = _userFee * (100 - kol.ratio) / 100;
@@ -131,11 +153,14 @@ contract Campaign is Ownable {
     function withdraw(address advertiser) public onlyAd3Hub returns (bool) {
         uint256 balance = IERC20(_paymentToken).balanceOf(address(this));
 
-        require(IERC20(_paymentToken).transfer(advertiser, balance));
+        IERC20(_paymentToken).safeTransfer(advertiser, balance);
 
         return true;
     }
 
+    /*//////////////////////////////////////////////////////////////
+                           USER OPERATIONS
+    //////////////////////////////////////////////////////////////*/
 
     /**
      * @dev claim user prize.
@@ -149,7 +174,7 @@ contract Campaign is Ownable {
         address signer = ecrecover(_createMessageDigest(address(this), msg.sender, amount), signature.v, signature.r, signature.s);
         require(_trustedSigner == signer, "PrizeSignature invalid.");
 
-        require(IERC20(_paymentToken).transfer(msg.sender, amount));
+        IERC20(_paymentToken).safeTransfer(msg.sender, amount);
         hasClaimed[msg.sender] = true;
 
         emit ClaimPrize(msg.sender, amount);

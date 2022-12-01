@@ -11,7 +11,7 @@ const { GOERLI_PRIVATE_KEY, ALCHEMY_PROJECT_ID} = process.env;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.10",
+  solidity: "0.8.0",
   networks: {
     hardhat: {
       chainId: 1337 // We set 1337 to make interacting with MetaMask simpler
