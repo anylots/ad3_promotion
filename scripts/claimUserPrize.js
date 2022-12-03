@@ -1,6 +1,6 @@
 
 const Campaign_Artifact = require("../artifacts/contracts/Campaign.sol/Campaign.json")
-const USDT_Artifact = require("../artifacts/contracts/USDT.sol/Token.json")
+const USDT_Artifact = require("../artifacts/contracts/Token.sol/TetherToken.json")
 const fs = require('fs');
 
 

@@ -168,7 +168,7 @@ contract Campaign {
                 // pay for kol and users.
                 IERC20(_paymentToken).safeTransfer(kol.kolAddress, (quantity * _userFee * kol.ratio) /100 );
 
-                // user_ Amount is claimed by the user 
+                // >> user_amount is claimed by the user 
             }
         }
         return true;

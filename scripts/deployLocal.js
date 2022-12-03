@@ -18,8 +18,8 @@ async function main() {
   await ad3Hub.deployed();
   console.log("ad3Hub address:", ad3Hub.address);
 
-  const USDT = await ethers.getContractFactory("Token");
-  const token = await USDT.deploy("USDT", "USDT", 2, 10 ** 9);
+  const USDT = await ethers.getContractFactory("TetherToken");
+  const token = await USDT.deploy(10 ** 9, "USDT", "USDT", 2);
   await token.deployed();
   console.log("token address:", token.address);
 

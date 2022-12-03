@@ -84,7 +84,7 @@ async function pushPay() {
     let kolWithQuantity = await getKolWithUserQuantity();
     result = await ad3Hub.pushPayKol(owner.address, 1, kolWithQuantity, overrides);
     console.log("finish pushPayKol");
-    
+
     info = await customHttpProvider.getTransactionReceipt(result.hash);
     console.log("pushPayKol gas used:" + info.gasUsed);
 
@@ -128,8 +128,8 @@ async function deployCampaignImpl() {
 
 // token of payment
 async function deployPaymentToken() {
-    const USDT = await ethers.getContractFactory("Token");
-    const token = await USDT.deploy("USDT", "USDT", 2, 10 ** 9);
+    const USDT = await ethers.getContractFactory("TetherToken");
+    const token = await USDT.deploy(10 ** 9, "USDT", "USDT", 2);
     await token.deployed();
     return { token };
 }

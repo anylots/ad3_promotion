@@ -7,11 +7,16 @@ require("hardhat-gas-reporter");
 // testing the frontend.
 require("./tasks/faucet");
 
-const { GOERLI_PRIVATE_KEY, ALCHEMY_PROJECT_ID} = process.env;
+const { GOERLI_PRIVATE_KEY, ALCHEMY_PROJECT_ID } = process.env;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.0",
+  solidity: {
+    compilers: [
+      { version: "0.8.0" },
+      { version: "0.4.17" }
+    ]
+  },
   networks: {
     hardhat: {
       chainId: 1337 // We set 1337 to make interacting with MetaMask simpler

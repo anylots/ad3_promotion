@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const Campaign_Artifact = require("../artifacts/contracts/Campaign.sol/Campaign.json")
-const Token_Artifact = require("../artifacts/contracts/USDT.sol/Token.json")
+const Token_Artifact = require("../artifacts/contracts/Token.sol/TetherToken.json")
 require("hardhat-gas-reporter");
 
 // Ad3 contract uniting test
@@ -21,8 +21,8 @@ describe("Ad3 contract", function () {
 
   // token of payment
   async function deployPaymentToken() {
-    const USDT = await ethers.getContractFactory("Token");
-    const token = await USDT.deploy("USDT", "USDT", 2, 10 ** 9);
+    const USDT = await ethers.getContractFactory("TetherToken");
+    const token = await USDT.deploy(10 ** 9, "USDT", "USDT", 2);
     await token.deployed();
     return { token };
   }
