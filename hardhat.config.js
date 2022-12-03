@@ -24,6 +24,10 @@ module.exports = {
     goerli: {
       url: `https://eth-goerli.g.alchemy.com/v2/${ALCHEMY_PROJECT_ID}`,
       accounts: [GOERLI_PRIVATE_KEY]
+    },
+    mumbai: {
+      url: `https://polygon-mumbai.g.alchemy.com/v2/YbE4U9U8b3M74blue_Un2wTDK83R0M2W1Ksf`,
+      accounts: [POLYGON_TEST_PRIVATE_KEY]
     }
   },
   gasReporter: {
