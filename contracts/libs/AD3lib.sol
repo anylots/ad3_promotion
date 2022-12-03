@@ -30,6 +30,14 @@ library AD3lib {
         address[] users;
     }
 
+    /// kol and users quantity
+    struct kolWithUserQuantity {
+        // Kol address
+        address kolAddress;
+        // users quantity
+        uint256 quantity;
+    }
+
     /// ECDSA signature of prize
     // We sign the compact information of campaignId, user address
     // and prize amount off chain, and users use the signature information 

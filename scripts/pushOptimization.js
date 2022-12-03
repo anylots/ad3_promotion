@@ -80,6 +80,14 @@ async function pushPay() {
     console.log("finish pushPay");
     let info = await customHttpProvider.getTransactionReceipt(result.hash);
     console.log("pushPay gas used:" + info.gasUsed);
+
+    let kolWithQuantity = await getKolWithUserQuantity();
+    result = await ad3Hub.pushPayKol(owner.address, 1, kolWithQuantity, overrides);
+    console.log("finish pushPayKol");
+    
+    info = await customHttpProvider.getTransactionReceipt(result.hash);
+    console.log("pushPayKol gas used:" + info.gasUsed);
+
     let resultAfterUserPay = await Campaign.remainBalance();
     console.log("resultAfterUserPay:" + resultAfterUserPay);
     console.log("pushPay complated");
@@ -132,16 +140,16 @@ async function getKolsFixtrue() {
     const [owner, addr1, addr2] = await ethers.getSigners();
     let kols = [
         {
-            _address: addr1.getAddress(),
+            kolAddress: addr1.getAddress(),
             fixedFee: 100,
             ratio: 70,
-            _paymentStage: 0,
+            paymentStage: 0,
         },
         {
-            _address: addr2.getAddress(),
+            kolAddress: addr2.getAddress(),
             fixedFee: 100,
             ratio: 70,
-            _paymentStage: 0,
+            paymentStage: 0,
         }
     ];
 
@@ -162,21 +170,39 @@ async function getKolsFixtrue() {
 async function getKolWithUsers() {
     const [owner, addr1, addr2, addr3, addr4, addr5, addr6, addr7] = await ethers.getSigners();
     let userList = [];
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 20; i++) {
         userList.push(addr6.getAddress());
     }
     let kolWithUsers = [
         {
-            _address: addr1.getAddress(),
+            kolAddress: addr1.getAddress(),
             users: [addr3.getAddress(), addr4.getAddress()]
         },
         {
-            users: userList,
-            _address: addr2.getAddress()
+            kolAddress: addr2.getAddress(),
+            users: userList
         }
     ];
 
     return kolWithUsers;
+}
+
+//kols for pushPayKol
+async function getKolWithUserQuantity() {
+    const [owner, addr1, addr2, addr3, addr4, addr5, addr6, addr7] = await ethers.getSigners();
+
+    let kolWithQuantity = [
+        {
+            kolAddress: addr1.getAddress(),
+            quantity: 10
+        },
+        {
+            kolAddress: addr2.getAddress(),
+            quantity: 20
+        }
+    ];
+
+    return kolWithQuantity;
 }
 
 //kols for payfixFee

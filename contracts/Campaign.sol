@@ -146,6 +146,34 @@ contract Campaign {
         return true;
     }
 
+     /**
+     * @dev Pay to kols.
+     * @param kols The address list of kolWithUserQuantity.
+     **/
+    function pushPayKol(AD3lib.kolWithUserQuantity[] memory kols) public onlyAd3Hub returns (bool) {
+        require(kols.length > 0, "AD3: kols of pay is empty.");
+
+        for (uint64 i = 0; i < kols.length; i++) {
+            AD3lib.kolWithUserQuantity memory kolWithUserQuantity = kols[i];
+            uint256 quantity = kolWithUserQuantity.quantity;
+            require(quantity > 0, "AD3: user's quantity is empty.");
+
+            AD3lib.kol memory kol = _kolStorages[kolWithUserQuantity.kolAddress];
+            require(kol.kolAddress != address(0), "kolAddress not exist.");
+
+            if(kol.ratio == 100) {
+                // pay for kol.
+                IERC20(_paymentToken).safeTransfer(kol.kolAddress, quantity * _userFee);
+            } else {
+                // pay for kol and users.
+                IERC20(_paymentToken).safeTransfer(kol.kolAddress, (quantity * _userFee * kol.ratio) /100 );
+
+                // user_ Amount is claimed by the user 
+            }
+        }
+        return true;
+    }
+
 
     /**
      * @dev Withdraw the remaining funds to advertiser.

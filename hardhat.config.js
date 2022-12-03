@@ -22,7 +22,7 @@ module.exports = {
     }
   },
   gasReporter: {
-    enabled: true,
+    enabled: false,
     gasPrice: 10,
     currency: 'USD',
     token: "ETH"

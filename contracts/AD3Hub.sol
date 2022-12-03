@@ -141,6 +141,19 @@ contract AD3Hub is Ownable {
     }
 
     /**
+     * @dev Pay to kols.
+     * @param kols The address list of kolWithUserQuantity.
+     **/
+    function pushPayKol(address advertiser, uint64 campaignId, AD3lib.kolWithUserQuantity[] memory kols) external onlyOwner {
+        uint256 balance = IERC20(_paymentToken).balanceOf(campaigns[advertiser][campaignId]);
+        require(balance > 0,"AD3: pushPay insufficient funds.");
+
+        bool pushPaySuccess = Campaign(campaigns[advertiser][campaignId]).pushPayKol(kols);
+        require(pushPaySuccess, "AD3: pushPay failured.");
+        emit Pushpay(advertiser);
+    }
+
+    /**
      * @dev Withdraw the remaining funds to advertiser.
      * @param advertiser The campaign's creater or owner
      * @param campaignId index in advertiser's campaign list
