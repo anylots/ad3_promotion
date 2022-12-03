@@ -19,13 +19,14 @@ async function main() {
   console.log("ad3Hub address:", ad3Hub.address);
 
   const USDT = await ethers.getContractFactory("TetherToken");
-  const token = await USDT.deploy(10 ** 9, "USDT", "USDT", 2);
+  const token = await USDT.deploy(10 ** 12, "USDT", "USDT", 6); //totalSupply = $10 ** 6
   await token.deployed();
   console.log("token address:", token.address);
 
   const Campaign = await ethers.getContractFactory("Campaign");
   const campaign = await Campaign.deploy();
   await campaign.deployed();
+  console.log("campaignImpl address:", campaign.address);
 
   await ad3Hub.setCampaignImpl(campaign.address);
 

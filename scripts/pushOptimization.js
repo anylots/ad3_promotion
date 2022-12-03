@@ -32,7 +32,7 @@ async function pushPay() {
 
     //1000 usdt
     //https://ethereum.org/en/developers/tutorials/send-token-etherjs/
-    let numberOfTokens = ethers.utils.parseUnits("1000", 2);
+    let numberOfTokens = ethers.utils.parseUnits("1000", 6);
     console.log("numberOfTokens:" + numberOfTokens);
     await token.approve(ad3Hub.address, numberOfTokens);
 
@@ -53,7 +53,7 @@ async function pushPay() {
     let resultBeforePay = await Campaign.remainBalance();
     console.log("resultBeforePay:" + resultBeforePay);
     // campaign amount
-    let numberOfAmount = ethers.utils.formatUnits(resultBeforePay, 2);
+    let numberOfAmount = ethers.utils.formatUnits(resultBeforePay, 6);
     console.log("numberOfAmount:" + numberOfAmount);
 
 
@@ -129,7 +129,7 @@ async function deployCampaignImpl() {
 // token of payment
 async function deployPaymentToken() {
     const USDT = await ethers.getContractFactory("TetherToken");
-    const token = await USDT.deploy(10 ** 9, "USDT", "USDT", 2);
+    const token = await USDT.deploy(10 ** 12, "USDT", "USDT", 6); //totalSupply = $10 ** 6
     await token.deployed();
     return { token };
 }
