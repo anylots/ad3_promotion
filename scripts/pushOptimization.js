@@ -39,12 +39,17 @@ async function pushPay() {
     let kols = await getKolsFixtrue();
     console.log("startCreateCampaign:" + kols.length);
 
+    let createCampaign1 = await ad3Hub.createCampaign(kols, 100000, 12);
     let createCampaign = await ad3Hub.createCampaign(kols, 100000, 12);
     let receipt = await customHttpProvider.getTransactionReceipt(createCampaign.hash);
     console.log("createCampaign gas used:" + receipt.gasUsed);
 
-    let campaignAddress = await ad3Hub.getCampaignAddress(owner.address, 1);
+    let campaignAddress = await ad3Hub.getCampaignAddress(owner.address, 2);
     console.log('campaignAddress: ' + campaignAddress);
+
+    let campaignAddressList = await ad3Hub.getCampaignAddressList(owner.address);
+    console.log('campaignAddressList: ' + campaignAddressList);
+
     let Campaign = new ethers.Contract(
         campaignAddress,
         Campaign_Artifact.abi,
@@ -59,13 +64,13 @@ async function pushPay() {
 
     let kolAddress = await getKolsAddress();
     //first kol pay
-    payfixFee = await ad3Hub.payfixFee(kolAddress, owner.address, 1);
+    payfixFee = await ad3Hub.payfixFee(kolAddress, owner.address, 2);
     receipt = await customHttpProvider.getTransactionReceipt(payfixFee.hash);
     console.log("payfixFee gas used:" + receipt.gasUsed);
 
 
     //second kol pay
-    await ad3Hub.payfixFee(kolAddress, owner.address, 1);
+    await ad3Hub.payfixFee(kolAddress, owner.address, 2);
 
 
     //UserPay and check campaign's balance
@@ -76,13 +81,13 @@ async function pushPay() {
     // let result = await Campaign.pushPay(kolWithUsers);
     // let result = await ad3Hub.pushPayTest(owner.address, 1, kolWithUsers, overrides);
 
-    let result = await ad3Hub.pushPay(owner.address, 1, kolWithUsers, overrides);
+    let result = await ad3Hub.pushPay(owner.address, 2, kolWithUsers, overrides);
     console.log("finish pushPay");
     let info = await customHttpProvider.getTransactionReceipt(result.hash);
     console.log("pushPay gas used:" + info.gasUsed);
 
     let kolWithQuantity = await getKolWithUserQuantity();
-    result = await ad3Hub.pushPayKol(owner.address, 1, kolWithQuantity, overrides);
+    result = await ad3Hub.pushPayKol(owner.address, 2, kolWithQuantity, overrides);
     console.log("finish pushPayKol");
 
     info = await customHttpProvider.getTransactionReceipt(result.hash);
@@ -129,7 +134,7 @@ async function deployCampaignImpl() {
 // token of payment
 async function deployPaymentToken() {
     const USDT = await ethers.getContractFactory("TetherToken");
-    const token = await USDT.deploy(10 ** 12, "USDT", "USDT", 6); //totalSupply = $10 ** 6
+    const token = await USDT.deploy(10 ** 12); //totalSupply = $10 ** 6
     await token.deployed();
     return { token };
 }

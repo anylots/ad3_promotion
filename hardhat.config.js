@@ -13,8 +13,7 @@ const { GOERLI_PRIVATE_KEY, ALCHEMY_PROJECT_ID, POLYGON_TEST_PRIVATE_KEY } = pro
 module.exports = {
   solidity: {
     compilers: [
-      { version: "0.8.0" },
-      { version: "0.4.17" }
+      { version: "0.8.0" }
     ]
   },
   networks: {
@@ -26,7 +25,7 @@ module.exports = {
       accounts: [GOERLI_PRIVATE_KEY]
     },
     mumbai: {
-      url: `https://polygon-mumbai.g.alchemy.com/v2/YbE4U9U8b3M74blue_Un2wTDK83R0M2W1Ksf`,
+      url: `https://polygon-mumbai.g.alchemy.com/v2/YbE4U9U8b3M74_Un2wTDK83R0M2W1Ksf`,
       accounts: [POLYGON_TEST_PRIVATE_KEY]
     }
   },
