@@ -7,7 +7,7 @@ require("hardhat-gas-reporter");
 // testing the frontend.
 require("./tasks/faucet");
 
-const { GOERLI_PRIVATE_KEY, ALCHEMY_PROJECT_ID } = process.env;
+const { GOERLI_PRIVATE_KEY, ALCHEMY_PROJECT_ID, POLYGON_TEST_PRIVATE_KEY } = process.env;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
