@@ -22,7 +22,7 @@ describe("Ad3 contract", function () {
   // token of payment
   async function deployPaymentToken() {
     const USDT = await ethers.getContractFactory("TetherToken");
-    const token = await USDT.deploy(10 ** 12, "USDT", "USDT", 6); //totalSupply = $10 ** 6
+    const token = await USDT.deploy(10 ** 12); //totalSupply = $10 ** 6
     await token.deployed();
     return { token };
   }

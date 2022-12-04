@@ -23,9 +23,6 @@ async function main() {
   await token.deployed();
   console.log("token address:", token.address);
 
-  let balance = await token.balanceOf(deployer.getAddress());
-  console.log("balance:" + balance);
-
   const Campaign = await ethers.getContractFactory("Campaign");
   const campaign = await Campaign.deploy();
   await campaign.deployed();
@@ -38,7 +35,6 @@ async function main() {
   await ad3Hub.setTrustedSigner(deployer.address);
 
 }
-
 
 
 
