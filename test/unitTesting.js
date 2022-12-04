@@ -315,7 +315,6 @@ async function getKolWithUserQuantity() {
       console.log("creatorBalance_AfterWithdraw:" + creatorWithdraw);
       expect(creatorWithdraw).to.equal(BigInt(creatorBalance) + BigInt(resultAfterUserPay));
       expect(creatorWithdraw).to.equal(999999999765);
-      
     });
   });
 
