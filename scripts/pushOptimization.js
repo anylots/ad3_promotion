@@ -42,6 +42,11 @@ async function pushPay() {
     console.log("startCreateCampaign:" + kols.length);
 
     let createCampaign1 = await ad3Hub.createCampaign(kols, 100000, 12);
+
+    await customHttpProvider.on(ad3Hub.filters.CreateCampaign(), (log, event) => {
+        console.log("======>create_campaign_log:" + JSON.stringify(log));
+    })
+    
     let createCampaign = await ad3Hub.createCampaign(kols, 100000, 12);
     let receipt = await customHttpProvider.getTransactionReceipt(createCampaign.hash);
     console.log("createCampaign gas used:" + receipt.gasUsed);
