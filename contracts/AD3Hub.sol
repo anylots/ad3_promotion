@@ -236,10 +236,11 @@ contract AD3Hub is Ownable {
     function getCampaignAddressList(address advertiser) public view returns(address[] memory){
         require(advertiser != address(0), "AD3Hub: advertiser is zero address.");
         uint64 lastest = campaignIds[advertiser];
+        address[] memory campaignList;
         if(lastest == 0){
-            revert();
+            return campaignList;
         }
-        address[] memory campaignList = new address[](lastest);
+        campaignList = new address[](lastest);
         for(uint64 i =0; i<lastest; i++){
             campaignList[i] = campaigns[advertiser][i+1];
         }

@@ -30,6 +30,8 @@ async function pushPay() {
     await ad3Hub.setPaymentToken(token.address);
     await ad3Hub.setTrustedSigner(owner.address);
 
+    await ad3Hub.getCampaignAddressList(owner.address);
+
     //1000 usdt
     //https://ethereum.org/en/developers/tutorials/send-token-etherjs/
     let numberOfTokens = ethers.utils.parseUnits("1000", 6);
