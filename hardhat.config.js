@@ -7,7 +7,7 @@ require("hardhat-gas-reporter");
 // testing the frontend.
 require("./tasks/faucet");
 
-const { GOERLI_PRIVATE_KEY, ALCHEMY_PROJECT_ID, POLYGON_TEST_PRIVATE_KEY } = process.env;
+const { GOERLI_PRIVATE_KEY, ALCHEMY_PROJECT_ID, POLYGON_TEST_PRIVATE_KEY, POLYGON_MAINNEI_PRIVATE_KEY } = process.env;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -27,6 +27,10 @@ module.exports = {
     mumbai: {
       url: `https://polygon-mumbai.g.alchemy.com/v2/YbE4U9U8b3M74_Un2wTDK83R0M2W1Ksf`,
       accounts: [POLYGON_TEST_PRIVATE_KEY]
+    },
+    polygon: {
+      url: `https://polygon-mainnet.g.alchemy.com/v2/bvL_Fraw7yQecq_U9WKVlKVuOyg4RJxK`,
+      accounts: [POLYGON_MAINNEI_PRIVATE_KEY]
     }
   },
   gasReporter: {

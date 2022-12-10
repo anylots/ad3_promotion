@@ -1,5 +1,5 @@
 const AD3Hub_Artifact = require("../artifacts/contracts/AD3Hub.sol/AD3Hub.json")
-const ad3Hub_address = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9';
+const ad3Hub_address = '0x63ae9644cF5Eda0A3B7f436232C181DbE4542B8E';
 
 const newOwner = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9';
 

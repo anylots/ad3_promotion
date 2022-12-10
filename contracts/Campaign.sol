@@ -201,6 +201,7 @@ contract Campaign {
         require(amount <= _userFee, "Amount invalid.");
         
         address signer = ecrecover(_createMessageDigest(address(this), msg.sender, amount), signature.v, signature.r, signature.s);
+        require(signer != address(0), "trustedSigner is zero address.");
         require(_trustedSigner == signer, "PrizeSignature invalid.");
 
         IERC20(_paymentToken).safeTransfer(msg.sender, amount);
