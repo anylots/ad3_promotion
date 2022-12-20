@@ -241,7 +241,7 @@ contract AD3Hub is Ownable {
             return campaignList;
         }
         campaignList = new address[](lastest);
-        for(uint64 i =0; i<lastest; i++){
+        for(uint64 i =0; i<lastest; ++i){
             campaignList[i] = campaigns[advertiser][i+1];
         }
         return campaignList;
