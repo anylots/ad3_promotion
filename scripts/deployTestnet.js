@@ -5,7 +5,7 @@ const usdt_address = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9';
 // yours, or create new ones.
 async function main() {
 
-  await transferOwner();
+  // await transferOwner();
   const [deployer] = await ethers.getSigners();
 
   console.log(

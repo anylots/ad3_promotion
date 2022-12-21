@@ -32,6 +32,11 @@ module.exports = {
       url: `https://polygon-mainnet.g.alchemy.com/v2/bvL_Fraw7yQecq_U9WKVlKVuOyg4RJxK`,
       accounts: [POLYGON_MAINNEI_PRIVATE_KEY]
     }
+    ,
+    moonbeamdev: {
+      url: `http://8.210.2.244:9933`,
+      accounts: ['0x5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133']
+    }
   },
   gasReporter: {
     enabled: false,
