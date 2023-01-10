@@ -205,8 +205,8 @@ contract Campaign {
         require(signer != address(0), "PrizeSigner is zero address.");
         require(_trustedSigner == signer, "PrizeSignature invalid.");
 
-        IERC20(_paymentToken).safeTransfer(msg.sender, amount);
         hasClaimed[msg.sender] = true;
+        IERC20(_paymentToken).safeTransfer(msg.sender, amount);
 
         emit ClaimPrize(msg.sender, amount);
     }
