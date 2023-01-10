@@ -52,6 +52,11 @@ contract Campaign {
     // the account has claimed.
     mapping(address => bool) hasClaimed;
 
+
+    /*//////////////////////////////////////////////////////////////
+                           OWNER OPERATIONS
+    //////////////////////////////////////////////////////////////*/
+
     /**
      *@dev Throws if called by any account other than the Ad3Hub.
      */
@@ -62,10 +67,6 @@ contract Campaign {
         );
         _;
     }
-
-    /*//////////////////////////////////////////////////////////////
-                           OWNER OPERATIONS
-    //////////////////////////////////////////////////////////////*/
 
     /**
      * @dev Constructor.
@@ -201,7 +202,7 @@ contract Campaign {
         require(amount <= _userFee, "Amount invalid.");
         
         address signer = ecrecover(_createMessageDigest(address(this), msg.sender, amount), signature.v, signature.r, signature.s);
-        require(signer != address(0), "trustedSigner is zero address.");
+        require(signer != address(0), "PrizeSigner is zero address.");
         require(_trustedSigner == signer, "PrizeSignature invalid.");
 
         IERC20(_paymentToken).safeTransfer(msg.sender, amount);
