@@ -68,7 +68,7 @@ contract AD3Hub is Ownable {
      * @param totalBudget The amount of campaign
      * @param userFee amount to be awarded to each user
      **/
-    function createCampaign(AD3lib.kol[] memory kols, uint256 totalBudget, uint256 userFee) external 
+    function createCampaign(AD3lib.kol[] calldata kols, uint256 totalBudget, uint256 userFee) external 
     returns(address instance){
         require(kols.length > 0, "kols is empty.");
 
@@ -115,7 +115,7 @@ contract AD3Hub is Ownable {
      * @param advertiser The campaign's creater or owner
      * @param campaignId index in advertiser's campaign list
      **/
-    function payfixFee(address[] memory kols, address advertiser, uint64 campaignId) external onlyOwner{
+    function payfixFee(address[] calldata kols, address advertiser, uint64 campaignId) external onlyOwner{
         uint256 balance = IERC20(_paymentToken).balanceOf(campaigns[advertiser][campaignId]);
         require(balance > 0, "AD3: balance <= 0");
 
@@ -144,7 +144,7 @@ contract AD3Hub is Ownable {
      * @dev Pay to kols.
      * @param kols The address list of kolWithUserQuantity.
      **/
-    function pushPayKol(address advertiser, uint64 campaignId, AD3lib.kolWithUserQuantity[] memory kols) external onlyOwner {
+    function pushPayKol(address advertiser, uint64 campaignId, AD3lib.kolWithUserQuantity[] calldata kols) external onlyOwner {
         uint256 balance = IERC20(_paymentToken).balanceOf(campaigns[advertiser][campaignId]);
         require(balance > 0,"AD3: pushPay insufficient funds.");
 

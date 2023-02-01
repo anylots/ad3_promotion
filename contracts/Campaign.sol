@@ -197,7 +197,7 @@ contract Campaign {
      * @param signature ECDSA signature of prize
      * @param amount The campaign's creater or owner
      **/
-    function claimUserPrize(AD3lib.PrizeSignature memory signature, uint256 amount) external {
+    function claimUserPrize(AD3lib.PrizeSignature calldata signature, uint256 amount) external {
         require(hasClaimed[msg.sender] == false, "Repeated claim.");
         require(amount <= _userFee, "Amount invalid.");
         
