@@ -110,50 +110,6 @@ contract AD3Hub is Ownable {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @dev Pay fixFee to kols.
-     * @param kols The address list of kol
-     * @param advertiser The campaign's creater or owner
-     * @param campaignId index in advertiser's campaign list
-     **/
-    function payfixFee(address[] calldata kols, address advertiser, uint64 campaignId) external onlyOwner{
-        uint256 balance = IERC20(_paymentToken).balanceOf(campaigns[advertiser][campaignId]);
-        require(balance > 0, "AD3: balance <= 0");
-
-        bool payContentFeeSuccess = Campaign(campaigns[advertiser][campaignId]).payfixFee(kols);
-        require(payContentFeeSuccess, "AD3: payContentFee failured.");
-
-        emit PayFixFee(msg.sender);
-    }
-
-    /**
-     * @dev Pay to users and kols.
-     * @param advertiser The campaign's creater or owner
-     * @param campaignId index in advertiser's campaign list
-     * @param kols The address list of kolWithUsers
-     **/
-    function pushPay(address advertiser, uint64 campaignId, AD3lib.kolWithUsers[] calldata kols) external onlyOwner{
-        uint256 balance = IERC20(_paymentToken).balanceOf(campaigns[advertiser][campaignId]);
-        require(balance > 0,"AD3: pushPay insufficient funds.");
-
-        bool pushPaySuccess = Campaign(campaigns[advertiser][campaignId]).pushPay(kols);
-        require(pushPaySuccess, "AD3: pushPay failured.");
-        emit Pushpay(advertiser);
-    }
-
-    /**
-     * @dev Pay to kols.
-     * @param kols The address list of kolWithUserQuantity.
-     **/
-    function pushPayKol(address advertiser, uint64 campaignId, AD3lib.kolWithUserQuantity[] calldata kols) external onlyOwner {
-        uint256 balance = IERC20(_paymentToken).balanceOf(campaigns[advertiser][campaignId]);
-        require(balance > 0,"AD3: pushPay insufficient funds.");
-
-        bool pushPaySuccess = Campaign(campaigns[advertiser][campaignId]).pushPayKol(kols);
-        require(pushPaySuccess, "AD3: pushPay failured.");
-        emit Pushpay(advertiser);
-    }
-
-    /**
      * @dev Withdraw the remaining funds to advertiser.
      * @param advertiser The campaign's creater or owner
      * @param campaignId index in advertiser's campaign list
