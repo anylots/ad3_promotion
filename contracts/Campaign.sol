@@ -52,6 +52,11 @@ contract Campaign {
     // the account has claimed.
     mapping(address => bool) hasClaimed;
 
+    uint256 public unlockTime;
+
+    uint public unlockBlock;
+
+
 
     /*//////////////////////////////////////////////////////////////
                            OWNER OPERATIONS
@@ -104,6 +109,10 @@ contract Campaign {
      * @param advertiser The campaign's creater or owner
      **/
     function withdraw(address advertiser) public onlyAd3Hub returns (bool) {
+        require(block.timestamp >= unlockTime + 30 days, "Funds cannot be withdrawn yet");
+        unlockBlock = block.number + 172800;
+        require(block.number >= unlockBlock, "Funds cannot be withdrawn yet");
+
         uint256 balance = IERC20(_paymentToken).balanceOf(address(this));
 
         IERC20(_paymentToken).safeTransfer(advertiser, balance);
