@@ -136,6 +136,10 @@ async function getKolWithUserQuantity() {
       const { campaign } = await deployCampaignImpl();
       await ad3Hub.setCampaignImpl(campaign.address);
 
+      await ad3Hub.getCampaignAddressList(owner.address);
+      await ad3Hub.getCampaignAddress(owner.address, 1);
+
+      
       await token.approve(ad3Hub.address, 100000);
 
       //Create campaign

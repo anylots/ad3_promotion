@@ -68,7 +68,7 @@ contract AD3Hub is Ownable {
      * @param totalBudget The amount of campaign
      * @param userFee amount to be awarded to each user
      **/
-    function createCampaign(AD3lib.kol[] memory kols, uint256 totalBudget, uint256 userFee) external 
+    function createCampaign(AD3lib.kol[] calldata kols, uint256 totalBudget, uint256 userFee) external 
     returns(address instance){
         require(kols.length > 0, "kols is empty.");
 
@@ -108,50 +108,6 @@ contract AD3Hub is Ownable {
     /*//////////////////////////////////////////////////////////////
                            OWNER OPERATIONS
     //////////////////////////////////////////////////////////////*/
-
-    /**
-     * @dev Pay fixFee to kols.
-     * @param kols The address list of kol
-     * @param advertiser The campaign's creater or owner
-     * @param campaignId index in advertiser's campaign list
-     **/
-    function payfixFee(address[] memory kols, address advertiser, uint64 campaignId) external onlyOwner{
-        uint256 balance = IERC20(_paymentToken).balanceOf(campaigns[advertiser][campaignId]);
-        require(balance > 0, "AD3: balance <= 0");
-
-        bool payContentFeeSuccess = Campaign(campaigns[advertiser][campaignId]).payfixFee(kols);
-        require(payContentFeeSuccess, "AD3: payContentFee failured.");
-
-        emit PayFixFee(msg.sender);
-    }
-
-    /**
-     * @dev Pay to users and kols.
-     * @param advertiser The campaign's creater or owner
-     * @param campaignId index in advertiser's campaign list
-     * @param kols The address list of kolWithUsers
-     **/
-    function pushPay(address advertiser, uint64 campaignId, AD3lib.kolWithUsers[] calldata kols) external onlyOwner{
-        uint256 balance = IERC20(_paymentToken).balanceOf(campaigns[advertiser][campaignId]);
-        require(balance > 0,"AD3: pushPay insufficient funds.");
-
-        bool pushPaySuccess = Campaign(campaigns[advertiser][campaignId]).pushPay(kols);
-        require(pushPaySuccess, "AD3: pushPay failured.");
-        emit Pushpay(advertiser);
-    }
-
-    /**
-     * @dev Pay to kols.
-     * @param kols The address list of kolWithUserQuantity.
-     **/
-    function pushPayKol(address advertiser, uint64 campaignId, AD3lib.kolWithUserQuantity[] memory kols) external onlyOwner {
-        uint256 balance = IERC20(_paymentToken).balanceOf(campaigns[advertiser][campaignId]);
-        require(balance > 0,"AD3: pushPay insufficient funds.");
-
-        bool pushPaySuccess = Campaign(campaigns[advertiser][campaignId]).pushPayKol(kols);
-        require(pushPaySuccess, "AD3: pushPay failured.");
-        emit Pushpay(advertiser);
-    }
 
     /**
      * @dev Withdraw the remaining funds to advertiser.
@@ -236,11 +192,12 @@ contract AD3Hub is Ownable {
     function getCampaignAddressList(address advertiser) public view returns(address[] memory){
         require(advertiser != address(0), "AD3Hub: advertiser is zero address.");
         uint64 lastest = campaignIds[advertiser];
+        address[] memory campaignList;
         if(lastest == 0){
-            revert();
+            return campaignList;
         }
-        address[] memory campaignList = new address[](lastest);
-        for(uint64 i =0; i<lastest; i++){
+        campaignList = new address[](lastest);
+        for(uint64 i =0; i<lastest; ++i){
             campaignList[i] = campaigns[advertiser][i+1];
         }
         return campaignList;

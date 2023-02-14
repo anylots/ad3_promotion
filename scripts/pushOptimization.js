@@ -30,6 +30,8 @@ async function pushPay() {
     await ad3Hub.setPaymentToken(token.address);
     await ad3Hub.setTrustedSigner(owner.address);
 
+    await ad3Hub.getCampaignAddressList(owner.address);
+
     //1000 usdt
     //https://ethereum.org/en/developers/tutorials/send-token-etherjs/
     let numberOfTokens = ethers.utils.parseUnits("1000", 6);
@@ -40,6 +42,11 @@ async function pushPay() {
     console.log("startCreateCampaign:" + kols.length);
 
     let createCampaign1 = await ad3Hub.createCampaign(kols, 100000, 12);
+
+    await customHttpProvider.on(ad3Hub.filters.CreateCampaign(), (log, event) => {
+        console.log("======>create_campaign_log:" + JSON.stringify(log));
+    })
+    
     let createCampaign = await ad3Hub.createCampaign(kols, 100000, 12);
     let receipt = await customHttpProvider.getTransactionReceipt(createCampaign.hash);
     console.log("createCampaign gas used:" + receipt.gasUsed);

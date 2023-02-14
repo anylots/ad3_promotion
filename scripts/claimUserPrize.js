@@ -13,6 +13,12 @@ async function claimPrize() {
     let campaignAddress = '0x94099942864EA81cCF197E9D71ac53310b1468D8';
     let usdtAddress = '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318';
 
+    //todo server
+    if (ethers.utils.isAddress(usdtAddress) === false) {
+        console.log("Not an eth address");
+        return;
+    }
+
     let privateKey = "0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0";
     let customHttpProvider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
     const signer = new ethers.Wallet(privateKey, customHttpProvider);
@@ -28,6 +34,7 @@ async function claimPrize() {
         USDT_Artifact.abi,
         signer
     );
+    
 
     let balance = await USDT.balanceOf(signer.address);
     console.log("balance before claim:" + balance);

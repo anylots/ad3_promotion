@@ -52,6 +52,11 @@ contract Campaign {
     // the account has claimed.
     mapping(address => bool) hasClaimed;
 
+
+    /*//////////////////////////////////////////////////////////////
+                           OWNER OPERATIONS
+    //////////////////////////////////////////////////////////////*/
+
     /**
      *@dev Throws if called by any account other than the Ad3Hub.
      */
@@ -62,10 +67,6 @@ contract Campaign {
         );
         _;
     }
-
-    /*//////////////////////////////////////////////////////////////
-                           OWNER OPERATIONS
-    //////////////////////////////////////////////////////////////*/
 
     /**
      * @dev Constructor.
@@ -97,83 +98,6 @@ contract Campaign {
         }
     }
 
-    /**
-     * @dev Pay fixFee to kols.
-     * @param kols The address list of kol
-     **/
-    function payfixFee(address[] memory kols) public onlyAd3Hub returns (bool) {
-
-        for (uint64 i = 0; i < kols.length; i++) {
-            address kolAddress = kols[i];
-            AD3lib.kol memory kol = _kolStorages[kolAddress];
-            require(kol.paymentStage < 2, "AD3: payfixFee already done.");
-            
-            kol.paymentStage++;
-            // pay for kol.
-            IERC20(_paymentToken).safeTransfer(kol.kolAddress, kol.fixedFee / 2);
-        }
-        return true;
-    }
-
-    /**
-     * @dev Pay to users and kols.
-     * @param kols The address list of kolWithUsers.
-     **/
-    function pushPay(AD3lib.kolWithUsers[] memory kols) public onlyAd3Hub returns (bool) {
-        require(kols.length > 0, "AD3: kols of pay is empty.");
-
-        for (uint64 i = 0; i < kols.length; i++) {
-            AD3lib.kolWithUsers memory kolWithUsers = kols[i];
-            address[] memory users = kolWithUsers.users;
-            require(users.length > 0, "AD3: users list is empty.");
-
-            AD3lib.kol memory kol = _kolStorages[kolWithUsers.kolAddress];
-            if(kol.ratio == 100) {
-                // pay for kol.
-                IERC20(_paymentToken).safeTransfer(kol.kolAddress, users.length * _userFee);
-            } else {
-                // pay for kol and users.
-                IERC20(_paymentToken).safeTransfer(kol.kolAddress, (users.length * _userFee * kol.ratio) /100 );
-                uint256 user_amount = _userFee * (100 - kol.ratio) / 100;
-                for (uint64 index = 0; index < users.length; index++) {
-                    address userAddress = users[index];
-                    require(userAddress != address(0), "user_address is zero address.");
-                    // pay for user.
-                    IERC20(_paymentToken).safeTransfer(userAddress, user_amount);
-                }
-            }
-        }
-        return true;
-    }
-
-     /**
-     * @dev Pay to kols.
-     * @param kols The address list of kolWithUserQuantity.
-     **/
-    function pushPayKol(AD3lib.kolWithUserQuantity[] memory kols) public onlyAd3Hub returns (bool) {
-        require(kols.length > 0, "AD3: kols of pay is empty.");
-
-        for (uint64 i = 0; i < kols.length; i++) {
-            AD3lib.kolWithUserQuantity memory kolWithUserQuantity = kols[i];
-            uint256 quantity = kolWithUserQuantity.quantity;
-            require(quantity > 0, "AD3: user's quantity is empty.");
-
-            AD3lib.kol memory kol = _kolStorages[kolWithUserQuantity.kolAddress];
-            require(kol.kolAddress != address(0), "kolAddress not exist.");
-
-            if(kol.ratio == 100) {
-                // pay for kol.
-                IERC20(_paymentToken).safeTransfer(kol.kolAddress, quantity * _userFee);
-            } else {
-                // pay for kol and users.
-                IERC20(_paymentToken).safeTransfer(kol.kolAddress, (quantity * _userFee * kol.ratio) /100 );
-
-                // >> user_amount is claimed by the user 
-            }
-        }
-        return true;
-    }
-
 
     /**
      * @dev Withdraw the remaining funds to advertiser.
@@ -196,15 +120,16 @@ contract Campaign {
      * @param signature ECDSA signature of prize
      * @param amount The campaign's creater or owner
      **/
-    function claimUserPrize(AD3lib.PrizeSignature memory signature, uint256 amount) external {
+    function claimUserPrize(AD3lib.PrizeSignature calldata signature, uint256 amount) external {
         require(hasClaimed[msg.sender] == false, "Repeated claim.");
         require(amount <= _userFee, "Amount invalid.");
         
         address signer = ecrecover(_createMessageDigest(address(this), msg.sender, amount), signature.v, signature.r, signature.s);
+        require(signer != address(0), "PrizeSigner is zero address.");
         require(_trustedSigner == signer, "PrizeSignature invalid.");
 
-        IERC20(_paymentToken).safeTransfer(msg.sender, amount);
         hasClaimed[msg.sender] = true;
+        IERC20(_paymentToken).safeTransfer(msg.sender, amount);
 
         emit ClaimPrize(msg.sender, amount);
     }

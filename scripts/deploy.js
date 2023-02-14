@@ -1,4 +1,4 @@
-const usdt_address = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9';
+const usdt_address = '0xc2132D05D31c914a87C6611C10748AEb04B58e8F';
 
 
 // This is a script for deploying your contracts. You can adapt it to deploy
@@ -23,10 +23,11 @@ async function main() {
   await campaign.deployed();
 
   await ad3Hub.setCampaignImpl(campaign.address);
+  //console.log("campaignImpl address:", campaign.address);
 
   await ad3Hub.setPaymentToken(usdt_address);
 
-  await ad3Hub.setTrustedSigner(deployer.address);
+  // await ad3Hub.setTrustedSigner(deployer.address);
 }
 
 
