@@ -54,7 +54,7 @@ contract Campaign {
 
     uint256 public unlockTime;
 
-    uint public unlockBlock;
+    uint256 public unlockBlock;
 
 
 
