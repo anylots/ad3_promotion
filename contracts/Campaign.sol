@@ -99,14 +99,16 @@ contract Campaign {
     _taskPaymentToken = taskPaymentToken;
     _trustedSigner = trustedSigner;
 
-    emit CreateCampaign(msg.sender)
+    emit CreateCampaign(msg.sender);
   }
 
   /**
    * @dev Withdraw the remaining funds to advertiser.
    * @param advertiser The campaign's creater or owner
    **/
-  function WithdrawCpaBudget(address advertiser) public onlyAd3Hub returns (bool) {
+  function WithdrawCpaBudget(
+    address advertiser
+  ) public onlyAd3Hub returns (bool) {
     uint256 balance = IERC20(_cpaPaymentToken).balanceOf(address(this));
 
     IERC20(_cpaPaymentToken).safeTransfer(advertiser, balance);
@@ -118,7 +120,9 @@ contract Campaign {
    * @dev Withdraw the remaining funds to advertiser.
    * @param advertiser The campaign's creater or owner
    **/
-  function WithdrawTaskBudget(address advertiser) public onlyAd3Hub returns (bool) {
+  function WithdrawTaskBudget(
+    address advertiser
+  ) public onlyAd3Hub returns (bool) {
     uint256 balance = IERC20(_taskPaymentToken).balanceOf(address(this));
 
     IERC20(_taskPaymentToken).safeTransfer(advertiser, balance);

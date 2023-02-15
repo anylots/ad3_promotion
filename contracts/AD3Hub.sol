@@ -129,7 +129,10 @@ contract AD3Hub is Ownable {
    * @param advertiser The campaign's creater or owner
    * @param campaignId index in advertiser's campaign list
    **/
-  function withdraw(address advertiser, uint64 campaignId) external onlyOwner {
+  function WithdrawCpaBudget(
+    address advertiser,
+    uint64 campaignId
+  ) external onlyOwner {
     require(advertiser != address(0), "AD3Hub: advertiser is zero address.");
 
     require(
@@ -137,9 +140,29 @@ contract AD3Hub is Ownable {
       "AD3Hub: No such campaign"
     );
 
-    bool withdrawSuccess = Campaign(campaigns[advertiser][campaignId]).withdraw(
-      advertiser
+    bool withdrawSuccess = Campaign(campaigns[advertiser][campaignId])
+      .WithdrawCpaBudget(advertiser);
+    require(withdrawSuccess, "AD3: withdraw failured.");
+  }
+
+  /**
+   * @dev Withdraw the remaining funds to advertiser.
+   * @param advertiser The campaign's creater or owner
+   * @param campaignId index in advertiser's campaign list
+   **/
+  function WithdrawTaskBudget(
+    address advertiser,
+    uint64 campaignId
+  ) external onlyOwner {
+    require(advertiser != address(0), "AD3Hub: advertiser is zero address.");
+
+    require(
+      campaigns[advertiser][campaignId] != address(0),
+      "AD3Hub: No such campaign"
     );
+
+    bool withdrawSuccess = Campaign(campaigns[advertiser][campaignId])
+      .WithdrawTaskBudget(advertiser);
     require(withdrawSuccess, "AD3: withdraw failured.");
   }
 
