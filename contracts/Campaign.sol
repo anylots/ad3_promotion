@@ -57,7 +57,6 @@ contract Campaign {
                            OWNER OPERATIONS
     //////////////////////////////////////////////////////////////*/
 
-
     /**
      *@dev Throws if called by any account other than the Ad3Hub.
      */
