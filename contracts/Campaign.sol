@@ -29,6 +29,10 @@ contract Campaign {
 
   event ClaimTaskReward(address indexed user);
 
+  event WithdrawCpaBudget(address indexed advertiser);
+
+  event WithdrawTaskBudget(address indexed advertiser);
+
   /*//////////////////////////////////////////////////////////////
                                 STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -102,19 +106,24 @@ contract Campaign {
    * @dev Withdraw the remaining funds to advertiser.
    * @param advertiser The campaign's creater or owner
    **/
-  function withdraw(address advertiser) public onlyAd3Hub returns (bool) {
-    require(
-      block.timestamp >= unlockTime + 30 days,
-      "Funds cannot be withdrawn yet"
-    );
-    unlockBlock = block.number + 172800;
-    require(block.number >= unlockBlock, "Funds cannot be withdrawn yet");
+  function WithdrawCpaBudget(address advertiser) public onlyAd3Hub returns (bool) {
+    uint256 balance = IERC20(_cpaPaymentToken).balanceOf(address(this));
 
-    uint256 balance = IERC20(_paymentToken).balanceOf(address(this));
+    IERC20(_cpaPaymentToken).safeTransfer(advertiser, balance);
 
-    IERC20(_paymentToken).safeTransfer(advertiser, balance);
+    emit WithdrawCpaBudget(advertiser);
+  }
 
-    return true;
+  /**
+   * @dev Withdraw the remaining funds to advertiser.
+   * @param advertiser The campaign's creater or owner
+   **/
+  function WithdrawTaskBudget(address advertiser) public onlyAd3Hub returns (bool) {
+    uint256 balance = IERC20(_taskPaymentToken).balanceOf(address(this));
+
+    IERC20(_taskPaymentToken).safeTransfer(advertiser, balance);
+
+    emit WithdrawTaskBudget(advertiser);
   }
 
   /*//////////////////////////////////////////////////////////////
@@ -128,7 +137,7 @@ contract Campaign {
    **/
   function claimCpaReward(uint256 amount, bytes memory _signature) external {
     require(
-      claimedCpaAddress[msg.sender] == true,
+      claimedCpaAddress[msg.sender] == false,
       "AD3Hub: Repeated claim reward."
     );
     require(amount <= 0, "Amount invalid.");
