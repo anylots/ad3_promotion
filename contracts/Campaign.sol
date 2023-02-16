@@ -40,8 +40,8 @@ contract Campaign {
   // campaign only init once.
   bool private _initialized;
 
-  // budget amount for per user.
-  uint256 public _userFee;
+  // rake ratio.
+  uint256 public _ratio;
 
   // address of ad3hub contract.
   address private _ad3hub;
@@ -64,10 +64,6 @@ contract Campaign {
   // the account task reward has claimed.
   mapping(address => bool) claimedTaskAddress;
 
-  uint256 public unlockTime;
-
-  uint256 public unlockBlock;
-
   /*//////////////////////////////////////////////////////////////
                            OWNER OPERATIONS
     //////////////////////////////////////////////////////////////*/
@@ -89,7 +85,9 @@ contract Campaign {
   function init(
     address cpaPaymentToken,
     address taskPaymentToken,
-    address trustedSigner
+    address trustedSigner,
+    address owner,
+    uint256 ratio
   ) public {
     require(_initialized == false, "AD3: campaign is already initialized.");
     _initialized = true;
@@ -98,6 +96,8 @@ contract Campaign {
     _cpaPaymentToken = cpaPaymentToken;
     _taskPaymentToken = taskPaymentToken;
     _trustedSigner = trustedSigner;
+    _owner = owner;
+    _ratio = ratio;
 
     emit CreateCampaign(msg.sender);
   }
@@ -156,7 +156,10 @@ contract Campaign {
     );
 
     claimedCpaAddress[msg.sender] = true;
-    IERC20(_cpaPaymentToken).safeTransfer(msg.sender, amount);
+    uint256 _amount = amount * ((100 - ratio) / 100);
+    uint256 _rakeAmount = amount * (ratio / 100);
+    IERC20(_cpaPaymentToken).safeTransfer(msg.sender, _amount);
+    IERC20(_cpaPaymentToken).safeTransfer(_owner, _rakeAmount);
 
     emit ClaimCpaReward(msg.sender);
   }
@@ -183,7 +186,10 @@ contract Campaign {
     );
 
     claimedTaskAddress[msg.sender] = true;
-    IERC20(_taskPaymentToken).safeTransfer(msg.sender, amount);
+    uint256 _amount = amount * ((100 - ratio) / 100);
+    uint256 _rakeAmount = amount * (ratio / 100);
+    IERC20(_taskPaymentToken).safeTransfer(msg.sender, _amount);
+    IERC20(_taskPaymentToken).safeTransfer(_owner, _rakeAmount);
 
     emit ClaimTaskReward(msg.sender);
   }

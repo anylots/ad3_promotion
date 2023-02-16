@@ -27,6 +27,9 @@ contract AD3Hub is Ownable {
                                 STORAGE
     //////////////////////////////////////////////////////////////*/
 
+  // contract owner
+  address public _owner;
+
   // createCampaign & claimRward transaction fee ratio
   uint256 public _ratio;
 
@@ -42,6 +45,17 @@ contract AD3Hub is Ownable {
   // Mapping from campaign address to the lastest campaignId,
   // campaignId should be incremented from 1.
   mapping(address => uint64) private campaignIds;
+
+  // GMV
+  mapping(address => uint64) private gmvPool;
+
+  /*//////////////////////////////////////////////////////////////
+                        CONSTRUCTOR
+    //////////////////////////////////////////////////////////////*/
+
+  constructor() {
+    _owner = msg.sender;
+  }
 
   /*//////////////////////////////////////////////////////////////
                         ADVERTISER OPERATIONS
@@ -93,24 +107,44 @@ contract AD3Hub is Ownable {
     }
     require(instance != address(0), "ERC1167: campaign create failed.");
 
+    // totalShare
+    uint256 totalShare = 100 + ratio;
+
     // init campaign
     Campaign(instance).init(
       cpaPaymentToken,
       taskPaymentToken,
       _trustedSigner,
+      _owner,
       _ratio
     );
     // init cpa amount
+    uint256 _cpaBonusBudget = cpaBonusBudget * ((100 - ratio) / 100);
+    uint256 _cpaRakeBudget = cpaBonusBudget * (ratio / 100);
     IERC20(cpaPaymentToken).safeTransferFrom(
       msg.sender,
       instance,
-      cpaBonusBudget
+      _cpaBonusBudget
+    );
+    // init cpa ratio amount
+    IERC20(cpaPaymentToken).safeTransferFrom(
+      msg.sender,
+      _owner,
+      _cpaRakeBudget
     );
     // init task amount
+    uint256 _taskBonusBudget = taskBonusBudget * ((100 - ratio) / 100);
+    uint256 _taskRakeBudget = taskBonusBudget * (ratio / 100);
     IERC20(taskPaymentToken).safeTransferFrom(
       msg.sender,
       instance,
-      taskBonusBudget
+      _taskBonusBudget
+    );
+    // init task ratio amount
+    IERC20(cpaPaymentToken).safeTransferFrom(
+      msg.sender,
+      _owner,
+      _taskRakeBudget
     );
 
     // save campaign to mapping
@@ -118,11 +152,34 @@ contract AD3Hub is Ownable {
     lastest++;
     campaigns[msg.sender][lastest] = instance;
     campaignIds[msg.sender] = lastest;
+
+    // save paymentToken to gmvPool
+    uint256 receivedCpaAmount = gmvPool[cpaPaymentToken];
+    if (receivedAmount > 0) {
+      gmvPool[cpaPaymentToken] = receivedCpaAmount + cpaBonusBudget;
+    } else {
+      gmvPool[cpaPaymentToken] = cpaBonusBudget;
+    }
+    uint256 receivedTaskAmount = gmvPool[taskPaymentToken];
+    if (receivedAmount > 0) {
+      gmvPool[cpaPaymentToken] = receivedTaskAmount + cpaBonusBudget;
+    } else {
+      gmvPool[cpaPaymentToken] = cpaBonusBudget;
+    }
   }
 
   /*//////////////////////////////////////////////////////////////
                            OWNER OPERATIONS
     //////////////////////////////////////////////////////////////*/
+  /**
+   * @dev set contract owner
+   * @param advertiser
+   * @param campaignId
+   */
+  function setOwner(address owner) external onlyOwner {
+    require(owner != address(0), "AD3Hub: invalid address");
+    _owner = owner;
+  }
 
   /**
    * @dev Withdraw the remaining funds to advertiser.
