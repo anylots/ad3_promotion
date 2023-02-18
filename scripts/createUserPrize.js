@@ -4,12 +4,12 @@ const fs = require('fs');
 const privateKey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 
 // 对要签名的参数进行编码
-function getMessageBytes(campaignAddress, account, amount) {
+function getMessageBytes(campaignAddress, type, account, amount) {
     // console.log(account);
     // console.log(amount);
 
     // 对应solidity的Keccak256
-    const messageHash = ethers.utils.solidityKeccak256(["address", "address", "uint256"], [campaignAddress, account, amount])
+    const messageHash = ethers.utils.solidityKeccak256(["address", "string", "address", "uint256"], [campaignAddress, type, account, amount])
     console.log("Message Hash: ", messageHash)
     // 由于 ethers 库的要求，需要先对哈希值数组化
     const messageBytes = ethers.utils.arrayify(messageHash)
@@ -19,8 +19,8 @@ function getMessageBytes(campaignAddress, account, amount) {
 }
 
 // 返回签名
-async function getSignature(signer, campaignAddress, account, amount) {
-    const messageBytes = getMessageBytes(campaignAddress, account, amount)
+async function getSignature(signer, type, campaignAddress, account, amount) {
+    const messageBytes = getMessageBytes(campaignAddress, type, account, amount)
     // 对数组化hash进行签名，自动添加"\x19Ethereum Signed Message:\n32"并进行签名
     const signature = await signer.signMessage(messageBytes)
     console.log("Signature: ", signature);
@@ -42,7 +42,7 @@ async function main() {
     let output = [];
     for (let i = 0; i < user_addresses.length; i++) {
         //对活动地址、用户地址、面额进行签名
-        let signature = await getSignature(signer, campaignAddress, user_addresses[i], 10);
+        let signature = await getSignature(signer, "CPA", campaignAddress, user_addresses[i], 10);
         console.log('Generating...');
         output.push({
             wallet: user_addresses[i],
