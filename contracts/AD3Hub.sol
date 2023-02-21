@@ -108,7 +108,7 @@ contract AD3Hub is Ownable {
     require(instance != address(0), "ERC1167: campaign create failed.");
 
     // totalShare
-    uint256 totalShare = 100 + ratio;
+    uint256 totalShare = 100 + _ratio;
 
     // init campaign
     Campaign(instance).init(
@@ -119,8 +119,8 @@ contract AD3Hub is Ownable {
       _ratio
     );
     // init cpa amount
-    uint256 _cpaBonusBudget = cpaBonusBudget * ((100 - ratio) / 100);
-    uint256 _cpaRakeBudget = cpaBonusBudget * (ratio / 100);
+    uint256 _cpaBonusBudget = cpaBonusBudget * ((100 - _ratio) / 100);
+    uint256 _cpaRakeBudget = cpaBonusBudget * (_ratio / 100);
     IERC20(cpaPaymentToken).safeTransferFrom(
       msg.sender,
       instance,
@@ -133,8 +133,8 @@ contract AD3Hub is Ownable {
       _cpaRakeBudget
     );
     // init task amount
-    uint256 _taskBonusBudget = taskBonusBudget * ((100 - ratio) / 100);
-    uint256 _taskRakeBudget = taskBonusBudget * (ratio / 100);
+    uint256 _taskBonusBudget = taskBonusBudget * ((100 - _ratio) / 100);
+    uint256 _taskRakeBudget = taskBonusBudget * (_ratio / 100);
     IERC20(taskPaymentToken).safeTransferFrom(
       msg.sender,
       instance,
@@ -154,18 +154,18 @@ contract AD3Hub is Ownable {
     campaignIds[msg.sender] = lastest;
 
     // save paymentToken to gmvPool
-    uint256 receivedCpaAmount = gmvPool[cpaPaymentToken];
-    if (receivedAmount > 0) {
-      gmvPool[cpaPaymentToken] = receivedCpaAmount + cpaBonusBudget;
-    } else {
-      gmvPool[cpaPaymentToken] = cpaBonusBudget;
-    }
-    uint256 receivedTaskAmount = gmvPool[taskPaymentToken];
-    if (receivedAmount > 0) {
-      gmvPool[cpaPaymentToken] = receivedTaskAmount + cpaBonusBudget;
-    } else {
-      gmvPool[cpaPaymentToken] = cpaBonusBudget;
-    }
+    // uint256 receivedCpaAmount = gmvPool[cpaPaymentToken];
+    // if (receivedAmount > 0) {
+    //   gmvPool[cpaPaymentToken] = receivedCpaAmount + cpaBonusBudget;
+    // } else {
+    //   gmvPool[cpaPaymentToken] = cpaBonusBudget;
+    // }
+    // uint256 receivedTaskAmount = gmvPool[taskPaymentToken];
+    // if (receivedAmount > 0) {
+    //   gmvPool[cpaPaymentToken] = receivedTaskAmount + cpaBonusBudget;
+    // } else {
+    //   gmvPool[cpaPaymentToken] = cpaBonusBudget;
+    // }
   }
 
   /*//////////////////////////////////////////////////////////////
@@ -173,8 +173,7 @@ contract AD3Hub is Ownable {
     //////////////////////////////////////////////////////////////*/
   /**
    * @dev set contract owner
-   * @param advertiser
-   * @param campaignId
+   * @param owner owner
    */
   function setOwner(address owner) external onlyOwner {
     require(owner != address(0), "AD3Hub: invalid address");
@@ -198,7 +197,7 @@ contract AD3Hub is Ownable {
     );
 
     bool withdrawSuccess = Campaign(campaigns[advertiser][campaignId])
-      .WithdrawCpaBudget(advertiser);
+      .withdrawCpaBudget(advertiser);
     require(withdrawSuccess, "AD3: withdraw failured.");
   }
 
@@ -219,7 +218,7 @@ contract AD3Hub is Ownable {
     );
 
     bool withdrawSuccess = Campaign(campaigns[advertiser][campaignId])
-      .WithdrawTaskBudget(advertiser);
+      .withdrawTaskBudget(advertiser);
     require(withdrawSuccess, "AD3: withdraw failured.");
   }
 
@@ -247,7 +246,7 @@ contract AD3Hub is Ownable {
    * @dev Set tranasation fee ratio of campagin
    * @param ratio transaction fee ratio
    */
-  function setRatio(ratio) external onlyOwner {
+  function setRatio(uint256 ratio) external onlyOwner {
     _ratio = ratio;
   }
 
@@ -255,7 +254,7 @@ contract AD3Hub is Ownable {
    * @dev Get tranasation fee ratio of campagin.
    * @return ratio transaction fee ratio
    **/
-  function getTrustedSigner() external view returns (address) {
+  function getRatio() external view returns (uint256) {
     return _ratio;
   }
 
@@ -274,14 +273,14 @@ contract AD3Hub is Ownable {
 
   /**
    * @dev claim cpa user prize.
-   * @param advertiser
-   * @param campaignId
-   * @param amount
-   * @param _signature
+   * @param advertiser advertiser
+   * @param campaignId campaignId
+   * @param amount amount
+   * @param _signature _signature
    **/
   function claimCpaReward(
     address advertiser,
-    address campainId,
+    uint64 campaignId,
     uint256 amount,
     bytes memory _signature
   ) external {
@@ -298,14 +297,14 @@ contract AD3Hub is Ownable {
 
   /**
    * @dev claim cpa user prize.
-   * @param advertiser
-   * @param campaignId
-   * @param amount
-   * @param _signature
+   * @param advertiser advertiser
+   * @param campaignId campaignId
+   * @param amount amount
+   * @param _signature _signature
    **/
   function claimTaskReward(
     address advertiser,
-    address campainId,
+    uint64 campaignId,
     uint256 amount,
     bytes memory _signature
   ) external {

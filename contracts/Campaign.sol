@@ -55,9 +55,6 @@ contract Campaign {
   // the ecdsa signer used to verify claim for user prizes.
   address private _trustedSigner;
 
-  // the kol info saved in the storage.
-  mapping(address => AD3lib.kol) private _kolStorages;
-
   // the account cpa reward has claimed.
   mapping(address => bool) claimedCpaAddress;
 
@@ -78,9 +75,11 @@ contract Campaign {
 
   /**
    * @dev Constructor.
-   * @param kols The list of kol
-   * @param userFee amount to be awarded to each user
-   * @param paymentToken address of paymentToken
+   * @param cpaPaymentToken The list of kol
+   * @param taskPaymentToken amount to be awarded to each user
+   * @param trustedSigner address of paymentToken
+   * @param owner address of paymentToken
+   * @param ratio address of paymentToken
    **/
   function init(
     address cpaPaymentToken,
@@ -92,11 +91,10 @@ contract Campaign {
     require(_initialized == false, "AD3: campaign is already initialized.");
     _initialized = true;
 
-    _ad3hub = msg.sender;
+    _ad3hub = owner;
     _cpaPaymentToken = cpaPaymentToken;
     _taskPaymentToken = taskPaymentToken;
     _trustedSigner = trustedSigner;
-    _owner = owner;
     _ratio = ratio;
 
     emit CreateCampaign(msg.sender);
@@ -106,7 +104,7 @@ contract Campaign {
    * @dev Withdraw the remaining funds to advertiser.
    * @param advertiser The campaign's creater or owner
    **/
-  function WithdrawCpaBudget(
+  function withdrawCpaBudget(
     address advertiser
   ) public onlyAd3Hub returns (bool) {
     uint256 balance = IERC20(_cpaPaymentToken).balanceOf(address(this));
@@ -120,7 +118,7 @@ contract Campaign {
    * @dev Withdraw the remaining funds to advertiser.
    * @param advertiser The campaign's creater or owner
    **/
-  function WithdrawTaskBudget(
+  function withdrawTaskBudget(
     address advertiser
   ) public onlyAd3Hub returns (bool) {
     uint256 balance = IERC20(_taskPaymentToken).balanceOf(address(this));
@@ -137,7 +135,7 @@ contract Campaign {
   /**
    * @dev claim cpa user prize.
    * @param amount the cpa task reward amount
-   * @param signature ECDSA signature of cpa reward
+   * @param _signature ECDSA signature of cpa reward
    **/
   function claimCpaReward(uint256 amount, bytes memory _signature) external {
     require(
@@ -146,20 +144,20 @@ contract Campaign {
     );
     require(amount <= 0, "Amount invalid.");
 
-    bytes _ethSignedMesssageHash = ECDSA.toEthSignedMessageHash(
+    bytes32 _ethSignedMesssageHash = ECDSA.toEthSignedMessageHash(
       keccak256(abi.encodePacked(address(this), msg.sender, amount))
     );
 
     require(
-      verify(_ethSignedMessageHash, _signature),
+      ECDSA.verify(_ethSignedMesssageHash, _signature, _trustedSigner),
       "PrizeSignature invalid."
     );
 
     claimedCpaAddress[msg.sender] = true;
-    uint256 _amount = amount * ((100 - ratio) / 100);
-    uint256 _rakeAmount = amount * (ratio / 100);
+    uint256 _amount = amount * ((100 - _ratio) / 100);
+    uint256 _rakeAmount = amount * (_ratio / 100);
     IERC20(_cpaPaymentToken).safeTransfer(msg.sender, _amount);
-    IERC20(_cpaPaymentToken).safeTransfer(_owner, _rakeAmount);
+    IERC20(_cpaPaymentToken).safeTransfer(_ad3hub, _rakeAmount);
 
     emit ClaimCpaReward(msg.sender);
   }
@@ -167,7 +165,7 @@ contract Campaign {
   /**
    * @dev claim task user prize.
    * @param amount the task reward amount
-   * @param signature ECDSA signature of task reward
+   * @param _signature ECDSA signature of task reward
    **/
   function claimTaskReward(uint256 amount, bytes memory _signature) external {
     require(
@@ -176,20 +174,20 @@ contract Campaign {
     );
     require(amount <= 0, "AD3Hub: Amount invalid.");
 
-    bytes _ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
+    bytes32 _ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
       keccak256(abi.encodePacked(address(this), msg.sender, amount))
     );
 
     require(
-      verify(_ethSignedMessageHash, _signature),
+      ECDSA.verify(_ethSignedMessageHash, _signature, _trustedSigner),
       "AD3Hub: PrizeSignature invalid."
     );
 
     claimedTaskAddress[msg.sender] = true;
-    uint256 _amount = amount * ((100 - ratio) / 100);
-    uint256 _rakeAmount = amount * (ratio / 100);
+    uint256 _amount = amount * ((100 - _ratio) / 100);
+    uint256 _rakeAmount = amount * (_ratio / 100);
     IERC20(_taskPaymentToken).safeTransfer(msg.sender, _amount);
-    IERC20(_taskPaymentToken).safeTransfer(_owner, _rakeAmount);
+    IERC20(_taskPaymentToken).safeTransfer(_ad3hub, _rakeAmount);
 
     emit ClaimTaskReward(msg.sender);
   }
