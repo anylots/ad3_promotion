@@ -145,7 +145,7 @@ contract Campaign {
     require(amount <= 0, "Amount invalid.");
 
     bytes32 _ethSignedMesssageHash = ECDSA.toEthSignedMessageHash(
-      keccak256(abi.encodePacked(address(this), msg.sender, amount))
+      keccak256(abi.encodePacked(address(this), "CPA", msg.sender, amount))
     );
 
     require(
@@ -175,7 +175,7 @@ contract Campaign {
     require(amount <= 0, "AD3Hub: Amount invalid.");
 
     bytes32 _ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
-      keccak256(abi.encodePacked(address(this), msg.sender, amount))
+      keccak256(abi.encodePacked(address(this), "TASK", msg.sender, amount))
     );
 
     require(
