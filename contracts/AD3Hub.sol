@@ -141,7 +141,7 @@ contract AD3Hub is Ownable {
       _taskBonusBudget
     );
     // init task ratio amount
-    IERC20(cpaPaymentToken).safeTransferFrom(
+    IERC20(taskPaymentToken).safeTransferFrom(
       msg.sender,
       _owner,
       _taskRakeBudget
