@@ -1,5 +1,4 @@
-const usdt_address = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9';
-
+const usdt_address = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
 
 // This is a script for deploying your contracts. You can adapt it to deploy
 // yours, or create new ones.
@@ -10,7 +9,7 @@ async function main() {
     "Deploying contracts with the account:",
     await deployer.getAddress()
   );
-  
+
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
   const AD3Hub = await ethers.getContractFactory("AD3Hub");
@@ -19,7 +18,7 @@ async function main() {
   console.log("ad3Hub address:", ad3Hub.address);
 
   const USDT = await ethers.getContractFactory("TetherToken");
-  const token = await USDT.deploy(10 ** 12); //totalSupply = $10 ** 6
+  const token = await USDT.deploy(10 ** 12); // totalSupply = $10 ** 6
   await token.deployed();
   console.log("token address:", token.address);
 
@@ -34,13 +33,9 @@ async function main() {
   await ad3Hub.setCampaignImpl(campaign.address);
 
   // await ad3Hub.setPaymentToken(token.address);
-  
+
   await ad3Hub.setTrustedSigner(deployer.address);
-
 }
-
-
-
 
 main()
   .then(() => process.exit(0))

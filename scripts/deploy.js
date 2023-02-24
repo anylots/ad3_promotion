@@ -1,5 +1,4 @@
-const usdt_address = '0xc2132D05D31c914a87C6611C10748AEb04B58e8F';
-
+const usdt_address = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
 
 // This is a script for deploying your contracts. You can adapt it to deploy
 // yours, or create new ones.
@@ -10,7 +9,7 @@ async function main() {
     "Deploying contracts with the account:",
     await deployer.getAddress()
   );
-  
+
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
   const AD3Hub = await ethers.getContractFactory("AD3Hub");
@@ -29,8 +28,6 @@ async function main() {
 
   // await ad3Hub.setTrustedSigner(deployer.address);
 }
-
-
 
 main()
   .then(() => process.exit(0))

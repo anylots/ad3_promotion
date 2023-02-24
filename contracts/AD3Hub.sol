@@ -47,7 +47,7 @@ contract AD3Hub is Ownable {
   mapping(address => uint64) private campaignIds;
 
   // GMV
-  mapping(address => uint64) private gmvPool;
+  // mapping(address => uint64) private gmvPool;
 
   /*//////////////////////////////////////////////////////////////
                         CONSTRUCTOR
@@ -107,9 +107,6 @@ contract AD3Hub is Ownable {
     }
     require(instance != address(0), "ERC1167: campaign create failed.");
 
-    // totalShare
-    uint256 totalShare = 100 + _ratio;
-
     // init campaign
     Campaign(instance).init(
       cpaPaymentToken,
@@ -126,7 +123,7 @@ contract AD3Hub is Ownable {
       instance,
       _cpaBonusBudget
     );
-    // init cpa ratio amount
+    // transform cpa ratio amount
     IERC20(cpaPaymentToken).safeTransferFrom(
       msg.sender,
       _owner,
@@ -141,7 +138,7 @@ contract AD3Hub is Ownable {
       _taskBonusBudget
     );
     // init task ratio amount
-    IERC20(cpaPaymentToken).safeTransferFrom(
+    IERC20(taskPaymentToken).safeTransferFrom(
       msg.sender,
       _owner,
       _taskRakeBudget
