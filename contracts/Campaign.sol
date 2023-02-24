@@ -112,7 +112,6 @@ contract Campaign {
     IERC20(_cpaPaymentToken).safeTransfer(advertiser, balance);
 
     emit WithdrawCpaBudget(advertiser);
-
     return true;
   }
 
@@ -128,7 +127,6 @@ contract Campaign {
     IERC20(_taskPaymentToken).safeTransfer(advertiser, balance);
 
     emit WithdrawTaskBudget(advertiser);
-
     return true;
   }
 
@@ -146,7 +144,7 @@ contract Campaign {
       claimedCpaAddress[msg.sender] == false,
       "AD3Hub: Repeated claim reward."
     );
-    require(amount <= 0, "Amount invalid.");
+    require(amount >= 0, "Amount invalid.");
 
     bytes32 _ethSignedMesssageHash = ECDSA.toEthSignedMessageHash(
       keccak256(abi.encodePacked(address(this), "CPA", msg.sender, amount))
@@ -176,7 +174,7 @@ contract Campaign {
       claimedTaskAddress[msg.sender] == true,
       "AD3Hub: Repeated claim reward."
     );
-    require(amount <= 0, "AD3Hub: Amount invalid.");
+    require(amount >= 0, "AD3Hub: Amount invalid.");
 
     bytes32 _ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
       keccak256(abi.encodePacked(address(this), "TASK", msg.sender, amount))

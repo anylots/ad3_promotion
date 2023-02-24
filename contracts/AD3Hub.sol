@@ -150,19 +150,6 @@ contract AD3Hub is Ownable {
     campaigns[msg.sender][lastest] = instance;
     campaignIds[msg.sender] = lastest;
 
-    // save paymentToken to gmvPool
-    // uint256 receivedCpaAmount = gmvPool[cpaPaymentToken];
-    // if (receivedAmount > 0) {
-    //   gmvPool[cpaPaymentToken] = receivedCpaAmount + cpaBonusBudget;
-    // } else {
-    //   gmvPool[cpaPaymentToken] = cpaBonusBudget;
-    // }
-    // uint256 receivedTaskAmount = gmvPool[taskPaymentToken];
-    // if (receivedAmount > 0) {
-    //   gmvPool[cpaPaymentToken] = receivedTaskAmount + cpaBonusBudget;
-    // } else {
-    //   gmvPool[cpaPaymentToken] = cpaBonusBudget;
-    // }
   }
 
   /*//////////////////////////////////////////////////////////////

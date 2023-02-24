@@ -1,7 +1,8 @@
 const { ethers } = require("hardhat")
 const fs = require('fs');
 
-const privateKey = "0x315bdde188acc16b06b41b3ccb06da359c2bbb5a60072b61aa13f907aaaeb782";
+// const privateKey = "0x315bdde188acc16b06b41b3ccb06da359c2bbb5a60072b61aa13f907aaaeb782";
+const privateKey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 //address = 0x193E70F5E72e838AdC6ee2A926C02979639D243d
 
 // 对要签名的参数进行编码
@@ -25,14 +26,15 @@ async function getSignature(signer, type, campaignAddress, account, amount) {
     // 对数组化hash进行签名，自动添加"\x19Ethereum Signed Message:\n32"并进行签名
     const signature = await signer.signMessage(messageBytes)
     console.log("Signature: ", signature);
-    let { r, s, v } = ethers.utils.splitSignature(signature)
-    return {r,s,v};
+    return signature;
+    // let { r, s, v } = ethers.utils.splitSignature(signature)
+    // return {r,s,v};
 }
 
 async function main() {
     const signer = new ethers.Wallet(privateKey);
     console.log(signer.address);
-    let campaignAddress = '0x986738EBF7D625716B89Ac93d54393135838A2ec';
+    let campaignAddress = '0xa16E02E87b7454126E5E10d957A927A7F5B5d2be';
     let user_addresses = [
         '0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199',
         '0xdD2FD4581271e230360230F9337D5c0430Bf44C0',
@@ -44,13 +46,11 @@ async function main() {
     let output = [];
     for (let i = 0; i < user_addresses.length; i++) {
         //对活动地址、用户地址、面额进行签名
-        let signature = await getSignature(signer, campaignAddress, user_addresses[i], 10);
+        let signature = await getSignature(signer, "CPA", campaignAddress, user_addresses[i], 10);
         console.log('Generating...');
         output.push({
             wallet: user_addresses[i],
-            r: signature.r,
-            s: signature.s,
-            v: signature.v
+            signature
         })
     }
 
