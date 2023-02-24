@@ -2,10 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-import {IERC20} from "./interfaces/IERC20.sol";
-import {SafeTransferLib} from "./libs/SafeTransferLib.sol";
-import "./libs/AD3lib.sol";
-
+import { IERC20 } from "./interfaces/IERC20.sol";
+import { SafeTransferLib } from "./libs/SafeTransferLib.sol";
+import { ECDSA } from "./libs/ECDSA.sol";
 
 /**
  * @title Campaign contract
@@ -17,144 +16,192 @@ import "./libs/AD3lib.sol";
  * @author Ad3
  **/
 contract Campaign {
-    //make the transfer lower gas-used and more safety.
-    using SafeTransferLib for IERC20;
+  //make the transfer lower gas-used and more safety.
+  using SafeTransferLib for IERC20;
 
-    /*//////////////////////////////////////////////////////////////
+  /*//////////////////////////////////////////////////////////////
                                 EVENTS
     //////////////////////////////////////////////////////////////*/
 
-    event ClaimPrize(address indexed user, uint256 indexed amount);
+  event CreateCampaign(address indexed advertiser);
 
+  event ClaimCpaReward(address indexed user);
 
-    /*//////////////////////////////////////////////////////////////
+  event ClaimTaskReward(address indexed user);
+
+  event WithdrawCpaBudget(address indexed advertiser);
+
+  event WithdrawTaskBudget(address indexed advertiser);
+
+  /*//////////////////////////////////////////////////////////////
                                 STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    // campaign only init once.
-    bool private _initialized;
+  // campaign only init once.
+  bool private _initialized;
 
-    // budget amount for per user.
-    uint256 public _userFee;
+  // rake ratio.
+  uint256 public _ratio;
 
-    // address of ad3hub contract.
-    address private _ad3hub;
+  // address of ad3hub contract.
+  address private _ad3hub;
 
-    // campaign budget token.
-    address public _paymentToken;
+  // campaign cpa budget token.
+  address public _cpaPaymentToken;
 
-    // the ecdsa signer used to verify claim for user prizes.
-    address private _trustedSigner;
-    
-    // the kol info saved in the storage.
-    mapping(address => AD3lib.kol) private _kolStorages;
+  // campaign task budget token.
+  address public _taskPaymentToken;
 
-    // the account has claimed.
-    mapping(address => bool) hasClaimed;
+  // the ecdsa signer used to verify claim for user prizes.
+  address private _trustedSigner;
 
+  // the account cpa reward has claimed.
+  mapping(address => bool) claimedCpaAddress;
 
-    /*//////////////////////////////////////////////////////////////
+  // the account task reward has claimed.
+  mapping(address => bool) claimedTaskAddress;
+
+  /*//////////////////////////////////////////////////////////////
                            OWNER OPERATIONS
     //////////////////////////////////////////////////////////////*/
 
-    /**
-     *@dev Throws if called by any account other than the Ad3Hub.
-     */
-    modifier onlyAd3Hub() {
-        require(
-            msg.sender == _ad3hub,
-            "The caller must be ad3hub."
-        );
-        _;
-    }
+  /**
+   *@dev Throws if called by any account other than the Ad3Hub.
+   */
+  modifier onlyAd3Hub() {
+    require(msg.sender == _ad3hub, "The caller must be ad3hub.");
+    _;
+  }
 
-    /**
-     * @dev Constructor.
-     * @param kols The list of kol
-     * @param userFee amount to be awarded to each user
-     * @param paymentToken address of paymentToken
-     **/
-    function init(
-        AD3lib.kol[] memory kols,
-        uint256 userFee,
-        address paymentToken,
-        address trustedSigner
-    ) public {
-        require(_initialized == false, "AD3: campaign is already initialized.");
-        _initialized = true;
+  /**
+   * @dev Constructor.
+   * @param cpaPaymentToken The list of kol
+   * @param taskPaymentToken amount to be awarded to each user
+   * @param trustedSigner address of paymentToken
+   * @param owner address of paymentToken
+   * @param ratio address of paymentToken
+   **/
+  function init(
+    address cpaPaymentToken,
+    address taskPaymentToken,
+    address trustedSigner,
+    address owner,
+    uint256 ratio
+  ) public {
+    require(_initialized == false, "AD3: campaign is already initialized.");
+    _initialized = true;
 
-        _ad3hub = msg.sender;
-        _userFee = userFee;
-        _paymentToken = paymentToken;
-        _trustedSigner = trustedSigner;
-        for (uint64 i = 0; i < kols.length; i++) {
-            AD3lib.kol memory kol = kols[i];
-            require(kol.kolAddress != address(0), "AD3: kol_address is zero address.");
-            require(kol.fixedFee > 0, "AD3: kol fixedFee <= 0");
-            require(kol.ratio >= 0, "AD3: kol ratio < 0");
-            require(kol.ratio <= 100, "AD3: kol ratio > 100");
+    _ad3hub = owner;
+    _cpaPaymentToken = cpaPaymentToken;
+    _taskPaymentToken = taskPaymentToken;
+    _trustedSigner = trustedSigner;
+    _ratio = ratio;
 
-            _kolStorages[kol.kolAddress] = kol;
-        }
-    }
+    emit CreateCampaign(msg.sender);
+  }
 
+  /**
+   * @dev Withdraw the remaining funds to advertiser.
+   * @param advertiser The campaign's creater or owner
+   **/
+  function withdrawCpaBudget(
+    address advertiser
+  ) public onlyAd3Hub returns (bool) {
+    uint256 balance = IERC20(_cpaPaymentToken).balanceOf(address(this));
 
-    /**
-     * @dev Withdraw the remaining funds to advertiser.
-     * @param advertiser The campaign's creater or owner
-     **/
-    function withdraw(address advertiser) public onlyAd3Hub returns (bool) {
-        uint256 balance = IERC20(_paymentToken).balanceOf(address(this));
+    IERC20(_cpaPaymentToken).safeTransfer(advertiser, balance);
 
-        IERC20(_paymentToken).safeTransfer(advertiser, balance);
+    emit WithdrawCpaBudget(advertiser);
+  }
 
-        return true;
-    }
+  /**
+   * @dev Withdraw the remaining funds to advertiser.
+   * @param advertiser The campaign's creater or owner
+   **/
+  function withdrawTaskBudget(
+    address advertiser
+  ) public onlyAd3Hub returns (bool) {
+    uint256 balance = IERC20(_taskPaymentToken).balanceOf(address(this));
 
-    /*//////////////////////////////////////////////////////////////
+    IERC20(_taskPaymentToken).safeTransfer(advertiser, balance);
+
+    emit WithdrawTaskBudget(advertiser);
+  }
+
+  /*//////////////////////////////////////////////////////////////
                            USER OPERATIONS
     //////////////////////////////////////////////////////////////*/
 
-    /**
-     * @dev claim user prize.
-     * @param signature ECDSA signature of prize
-     * @param amount The campaign's creater or owner
-     **/
-    function claimUserPrize(AD3lib.PrizeSignature calldata signature, uint256 amount) external {
-        require(hasClaimed[msg.sender] == false, "Repeated claim.");
-        require(amount <= _userFee, "Amount invalid.");
-        
-        address signer = ecrecover(_createMessageDigest(address(this), msg.sender, amount), signature.v, signature.r, signature.s);
-        require(signer != address(0), "PrizeSigner is zero address.");
-        require(_trustedSigner == signer, "PrizeSignature invalid.");
-
-        hasClaimed[msg.sender] = true;
-        IERC20(_paymentToken).safeTransfer(msg.sender, amount);
-
-        emit ClaimPrize(msg.sender, amount);
-    }
-
-    /**
-     * @dev _createMessageDigest.
-     * @param _campaign campaign address
-     * @param _user user address
-     * @param _amount prize amount for claim
-     **/
-    function _createMessageDigest(address _campaign, address _user, uint256 _amount) internal pure returns (bytes32) {
-        return keccak256(
-            abi.encodePacked(
-                "\x19Ethereum Signed Message:\n32",
-                keccak256(abi.encodePacked(_campaign, _user, _amount))
-            )
+  /**
+   * @dev claim cpa user prize.
+   * @param amount the cpa task reward amount
+   * @param _signature ECDSA signature of cpa reward
+   **/
+  function claimCpaReward(uint256 amount, bytes memory _signature) external {
+    require(
+      claimedCpaAddress[msg.sender] == false,
+      "AD3Hub: Repeated claim reward."
     );
-}  
+    require(amount <= 0, "Amount invalid.");
 
-    /**
-     * @dev Query campaign remain balance.
-     **/
-    function remainBalance() public view returns (uint256) {
-        uint256 balance = IERC20(_paymentToken).balanceOf(address(this));
-        return balance;
-    }
+    bytes32 _ethSignedMesssageHash = ECDSA.toEthSignedMessageHash(
+      keccak256(abi.encodePacked(address(this), "CPA", msg.sender, amount))
+    );
 
+    require(
+      ECDSA.verify(_ethSignedMesssageHash, _signature, _trustedSigner),
+      "PrizeSignature invalid."
+    );
+
+    claimedCpaAddress[msg.sender] = true;
+    uint256 _amount = amount * ((100 - _ratio) / 100);
+    uint256 _rakeAmount = amount * (_ratio / 100);
+    IERC20(_cpaPaymentToken).safeTransfer(msg.sender, _amount);
+    IERC20(_cpaPaymentToken).safeTransfer(_ad3hub, _rakeAmount);
+
+    emit ClaimCpaReward(msg.sender);
+  }
+
+  /**
+   * @dev claim task user prize.
+   * @param amount the task reward amount
+   * @param _signature ECDSA signature of task reward
+   **/
+  function claimTaskReward(uint256 amount, bytes memory _signature) external {
+    require(
+      claimedTaskAddress[msg.sender] == true,
+      "AD3Hub: Repeated claim reward."
+    );
+    require(amount <= 0, "AD3Hub: Amount invalid.");
+
+    bytes32 _ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
+      keccak256(abi.encodePacked(address(this), "TASK", msg.sender, amount))
+    );
+
+    require(
+      ECDSA.verify(_ethSignedMessageHash, _signature, _trustedSigner),
+      "AD3Hub: PrizeSignature invalid."
+    );
+
+    claimedTaskAddress[msg.sender] = true;
+    uint256 _amount = amount * ((100 - _ratio) / 100);
+    uint256 _rakeAmount = amount * (_ratio / 100);
+    IERC20(_taskPaymentToken).safeTransfer(msg.sender, _amount);
+    IERC20(_taskPaymentToken).safeTransfer(_ad3hub, _rakeAmount);
+
+    emit ClaimTaskReward(msg.sender);
+  }
+
+  /**
+   * @dev Query campaign remain balance.
+   **/
+  function remainCpaBonusBalance() public view returns (uint256) {
+    uint256 balance = IERC20(_cpaPaymentToken).balanceOf(address(this));
+    return balance;
+  }
+
+  function remainTaskBonusBlance() public view returns (uint256) {
+    uint256 balance = IERC20(_taskPaymentToken).balanceOf(address(this));
+    return balance;
+  }
 }
