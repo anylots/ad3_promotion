@@ -104,24 +104,32 @@ contract Campaign {
    * @dev Withdraw the remaining funds to advertiser.
    * @param advertiser The campaign's creater or owner
    **/
-  function withdrawCpaBudget(address advertiser) public onlyAd3Hub {
+  function withdrawCpaBudget(
+    address advertiser
+  ) public onlyAd3Hub returns (bool) {
     uint256 balance = IERC20(_cpaPaymentToken).balanceOf(address(this));
 
     IERC20(_cpaPaymentToken).safeTransfer(advertiser, balance);
 
     emit WithdrawCpaBudget(advertiser);
+
+    return true;
   }
 
   /**
    * @dev Withdraw the remaining funds to advertiser.
    * @param advertiser The campaign's creater or owner
    **/
-  function withdrawTaskBudget(address advertiser) public onlyAd3Hub {
+  function withdrawTaskBudget(
+    address advertiser
+  ) public onlyAd3Hub returns (bool) {
     uint256 balance = IERC20(_taskPaymentToken).balanceOf(address(this));
 
     IERC20(_taskPaymentToken).safeTransfer(advertiser, balance);
 
     emit WithdrawTaskBudget(advertiser);
+
+    return true;
   }
 
   /*//////////////////////////////////////////////////////////////

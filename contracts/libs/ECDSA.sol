@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: GPL-3.0 license
+
+pragma solidity ^0.8.0;
+
 library ECDSA {
   /**
    * @dev 通过ECDSA，验证签名地址是否正确，如果正确则返回true
@@ -49,7 +53,9 @@ library ECDSA {
    * 以及`EIP191`:https://eips.ethereum.org/EIPS/eip-191`
    * 添加"\x19Ethereum Signed Message:\n32"字段，防止签名的是可执行交易。
    */
-  function toEthSignedMessageHash(bytes32 hash) internal pure returns (bytes32) {
+  function toEthSignedMessageHash(
+    bytes32 hash
+  ) internal pure returns (bytes32) {
     // 32 is the length in bytes of hash,
     // enforced by the type signature above
     return
