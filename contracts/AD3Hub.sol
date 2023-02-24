@@ -107,9 +107,6 @@ contract AD3Hub is Ownable {
     }
     require(instance != address(0), "ERC1167: campaign create failed.");
 
-    // totalShare
-    uint256 totalShare = 100 + _ratio;
-
     // init campaign
     Campaign(instance).init(
       cpaPaymentToken,
@@ -153,19 +150,6 @@ contract AD3Hub is Ownable {
     campaigns[msg.sender][lastest] = instance;
     campaignIds[msg.sender] = lastest;
 
-    // save paymentToken to gmvPool
-    // uint256 receivedCpaAmount = gmvPool[cpaPaymentToken];
-    // if (receivedAmount > 0) {
-    //   gmvPool[cpaPaymentToken] = receivedCpaAmount + cpaBonusBudget;
-    // } else {
-    //   gmvPool[cpaPaymentToken] = cpaBonusBudget;
-    // }
-    // uint256 receivedTaskAmount = gmvPool[taskPaymentToken];
-    // if (receivedAmount > 0) {
-    //   gmvPool[cpaPaymentToken] = receivedTaskAmount + cpaBonusBudget;
-    // } else {
-    //   gmvPool[cpaPaymentToken] = cpaBonusBudget;
-    // }
   }
 
   /*//////////////////////////////////////////////////////////////
