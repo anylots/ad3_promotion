@@ -107,9 +107,6 @@ contract AD3Hub is Ownable {
     }
     require(instance != address(0), "ERC1167: campaign create failed.");
 
-    // totalShare
-    uint256 totalShare = 100 + _ratio;
-
     // init campaign
     Campaign(instance).init(
       cpaPaymentToken,
