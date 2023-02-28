@@ -158,8 +158,12 @@ contract Campaign {
     claimedCpaAddress[msg.sender] = true;
     uint256 _amount = amount * ((100 - _ratio) / 100);
     uint256 _rakeAmount = amount * (_ratio / 100);
-    IERC20(_cpaPaymentToken).safeTransfer(msg.sender, _amount);
-    IERC20(_cpaPaymentToken).safeTransfer(_ad3hub, _rakeAmount);
+    if (_amount > 0) {
+      IERC20(_cpaPaymentToken).safeTransfer(msg.sender, _amount);
+    }
+    if (_rakeAmount > 0) {
+      IERC20(_cpaPaymentToken).safeTransfer(_ad3hub, _rakeAmount);
+    }
 
     emit ClaimCpaReward(msg.sender);
   }
@@ -171,7 +175,7 @@ contract Campaign {
    **/
   function claimTaskReward(uint256 amount, bytes memory _signature) external {
     require(
-      claimedTaskAddress[msg.sender] == true,
+      claimedTaskAddress[msg.sender] == false,
       "AD3Hub: Repeated claim reward."
     );
     require(amount >= 0, "AD3Hub: Amount invalid.");
@@ -188,8 +192,12 @@ contract Campaign {
     claimedTaskAddress[msg.sender] = true;
     uint256 _amount = amount * ((100 - _ratio) / 100);
     uint256 _rakeAmount = amount * (_ratio / 100);
-    IERC20(_taskPaymentToken).safeTransfer(msg.sender, _amount);
-    IERC20(_taskPaymentToken).safeTransfer(_ad3hub, _rakeAmount);
+    if (_amount > 0) {
+      IERC20(_taskPaymentToken).safeTransfer(msg.sender, _amount);
+    }
+    if (_rakeAmount > 0) {
+      IERC20(_taskPaymentToken).safeTransfer(_ad3hub, _rakeAmount);
+    }
 
     emit ClaimTaskReward(msg.sender);
   }
