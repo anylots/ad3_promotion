@@ -32,9 +32,13 @@ module.exports = {
       accounts: [POLYGON_MAINNEI_PRIVATE_KEY]
     }
     ,
-    moonbeamdev: {
+    ethermind: {
       url: `http://8.210.2.244:9933`,
       accounts: ['0x5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133']
+    },
+    frondier: {
+      url: `http://8.210.44.55:9933`,
+      accounts: ['0x1667b42e9169b4a17fd62ebf339e449fcd1464b1db58d8e0518416cc58ec6d30']
     }
   },
   gasReporter: {

@@ -10,8 +10,16 @@ const overrides = {
 }
 
 async function main() {
+    let customHttpProvider = new ethers.providers.JsonRpcProvider("http://8.210.2.244:9933");
 
-    await claimPrize();
+    console.log("getTransactionReceipt---");
+
+    let info = await customHttpProvider.getTransactionReceipt('0x95698b466f3b2d848f71c8acfc34fba88ce210b17899573e8b69ca22f9642923');
+    console.log("infoResult: ");
+
+    console.log("info: "+ JSON.stringify(info));
+
+    // await claimPrize();
 }
 
 async function claimPrize() {
