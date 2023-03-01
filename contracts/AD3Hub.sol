@@ -11,10 +11,8 @@ import "./Campaign.sol";
  * - Advertisers can:
  *   # CreateCampaign
  *   # GetCampaignAddress
- * - Owner can:
- *   # PayfixFee
- *   # Pushpay
- *   # Withdraw
+ * - Protocol Owner can:
+ *   # withdraw funds to advertiser
  * - All admin functions are callable by the deployer
  *
  * @author Ad3
@@ -25,10 +23,7 @@ contract AD3Hub is Ownable {
 
   /*//////////////////////////////////////////////////////////////
                                 STORAGE
-    //////////////////////////////////////////////////////////////*/
-
-  // contract owner
-  address public _owner;
+  //////////////////////////////////////////////////////////////*/
 
   // createCampaign & claimRward transaction fee ratio
   uint256 public _ratio;
@@ -57,15 +52,11 @@ contract AD3Hub is Ownable {
 
   /*//////////////////////////////////////////////////////////////
                         CONSTRUCTOR
-    //////////////////////////////////////////////////////////////*/
-
-  constructor() {
-    _owner = msg.sender;
-  }
+  //////////////////////////////////////////////////////////////*/
 
   /*//////////////////////////////////////////////////////////////
                         ADVERTISER OPERATIONS
-    //////////////////////////////////////////////////////////////*/
+  //////////////////////////////////////////////////////////////*/
 
   /**
    * @dev Create an campaign with Minimal Proxy.
@@ -118,10 +109,10 @@ contract AD3Hub is Ownable {
       cpaPaymentToken,
       taskPaymentToken,
       _trustedSigner,
-      _owner,
+      super.owner(),
       _ratio
     );
-    // init cpa amount
+    // prepare cpa budget
     uint256 _cpaBonusBudget = cpaBonusBudget * ((100 - _ratio) / 100);
     uint256 _cpaRakeBudget = cpaBonusBudget * (_ratio / 100);
     IERC20(cpaPaymentToken).safeTransferFrom(
@@ -129,13 +120,13 @@ contract AD3Hub is Ownable {
       instance,
       _cpaBonusBudget
     );
-    // init cpa ratio amount
+    // pay cpa protocol fee
     IERC20(cpaPaymentToken).safeTransferFrom(
       msg.sender,
-      _owner,
+      super.owner(),
       _cpaRakeBudget
     );
-    // init task amount
+    // prepare task budget
     uint256 _taskBonusBudget = taskBonusBudget * ((100 - _ratio) / 100);
     uint256 _taskRakeBudget = taskBonusBudget * (_ratio / 100);
     IERC20(taskPaymentToken).safeTransferFrom(
@@ -143,10 +134,10 @@ contract AD3Hub is Ownable {
       instance,
       _taskBonusBudget
     );
-    // init task ratio amount
+    // pay task protocol fee
     IERC20(taskPaymentToken).safeTransferFrom(
       msg.sender,
-      _owner,
+      super.owner(),
       _taskRakeBudget
     );
 
@@ -161,22 +152,14 @@ contract AD3Hub is Ownable {
 
   /*//////////////////////////////////////////////////////////////
                            OWNER OPERATIONS
-    //////////////////////////////////////////////////////////////*/
-  /**
-   * @dev set contract owner
-   * @param owner owner
-   */
-  function setOwner(address owner) external onlyOwner {
-    require(owner != address(0), "AD3Hub: invalid address");
-    _owner = owner;
-  }
+  //////////////////////////////////////////////////////////////*/
 
   /**
    * @dev Withdraw the remaining funds to advertiser.
    * @param advertiser The campaign's creater or owner
    * @param campaignId index in advertiser's campaign list
    **/
-  function WithdrawCpaBudget(
+  function withdrawCpaBudget(
     address advertiser,
     uint64 campaignId
   ) external onlyOwner {
@@ -197,7 +180,7 @@ contract AD3Hub is Ownable {
    * @param advertiser The campaign's creater or owner
    * @param campaignId index in advertiser's campaign list
    **/
-  function WithdrawTaskBudget(
+  function withdrawTaskBudget(
     address advertiser,
     uint64 campaignId
   ) external onlyOwner {
@@ -262,53 +245,6 @@ contract AD3Hub is Ownable {
                         PUBLIC OPERATIONS
     //////////////////////////////////////////////////////////////*/
 
-  /**
-   * @dev claim cpa user prize.
-   * @param advertiser advertiser
-   * @param campaignId campaignId
-   * @param amount amount
-   * @param _signature _signature
-   **/
-  function claimCpaReward(
-    address advertiser,
-    uint64 campaignId,
-    uint256 amount,
-    bytes memory _signature
-  ) external {
-    require(advertiser != address(0), "AD3Hub: advertiser is zero address.");
-    require(
-      campaigns[advertiser][campaignId] != address(0),
-      "AD3Hub: No such campaign"
-    );
-    Campaign(campaigns[advertiser][campaignId]).claimCpaReward(
-      amount,
-      _signature
-    );
-  }
-
-  /**
-   * @dev claim cpa user prize.
-   * @param advertiser advertiser
-   * @param campaignId campaignId
-   * @param amount amount
-   * @param _signature _signature
-   **/
-  function claimTaskReward(
-    address advertiser,
-    uint64 campaignId,
-    uint256 amount,
-    bytes memory _signature
-  ) external {
-    require(advertiser != address(0), "AD3Hub: advertiser is zero address.");
-    require(
-      campaigns[advertiser][campaignId] != address(0),
-      "AD3Hub: No such campaign"
-    );
-    Campaign(campaigns[advertiser][campaignId]).claimTaskReward(
-      amount,
-      _signature
-    );
-  }
 
   /**
    * @dev get Address of Campaign

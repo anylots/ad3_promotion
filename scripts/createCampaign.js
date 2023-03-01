@@ -1,8 +1,8 @@
-const usdt_address = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+const usdt_address = "0xe15a3dF7DcC7E26dA79B2213f59A50ac53ea4f07";
 const Token_Artifact = require("../artifacts/contracts/Token.sol/TetherToken.json");
 const Campaign_Artifact = require("../artifacts/contracts/Campaign.sol/Campaign.json");
 const AD3Hub_Artifact = require("../artifacts/contracts/AD3Hub.sol/AD3Hub.json");
-const ad3hub_address = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const ad3hub_address = "0x65A6da30DA6F59f1122f1c300868090f0AC1a1Dc";
 
 const overrides = {
   gasLimit: 15000000,
@@ -37,6 +37,14 @@ async function main() {
     overrides
   );
   console.log("createCampaign:" + createCampaign.hash);
+
+  await new Promise((resolve, reject) => {
+    setTimeout(function () {
+      resolve('time')
+    }, 3000)
+  })
+
+
   let campaignAddress = await AD3Hub.getCampaignAddress(deployer.address, 1);
   console.log("campaignAddress: " + campaignAddress);
 }

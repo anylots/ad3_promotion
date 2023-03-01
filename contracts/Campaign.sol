@@ -55,6 +55,9 @@ contract Campaign {
   // the ecdsa signer used to verify claim for user prizes.
   address private _trustedSigner;
 
+  // the vault of protocol.
+  address private _protocolVault;
+
   // the account cpa reward has claimed.
   mapping(address => bool) claimedCpaAddress;
 
@@ -78,30 +81,31 @@ contract Campaign {
    * @param cpaPaymentToken The list of kol
    * @param taskPaymentToken amount to be awarded to each user
    * @param trustedSigner address of paymentToken
-   * @param owner address of paymentToken
+   * @param protocolVault address of protocolVault
    * @param ratio address of paymentToken
    **/
   function init(
     address cpaPaymentToken,
     address taskPaymentToken,
     address trustedSigner,
-    address owner,
+    address protocolVault,
     uint256 ratio
   ) public {
     require(_initialized == false, "AD3: campaign is already initialized.");
     _initialized = true;
 
-    _ad3hub = owner;
+    _ad3hub = msg.sender;
     _cpaPaymentToken = cpaPaymentToken;
     _taskPaymentToken = taskPaymentToken;
     _trustedSigner = trustedSigner;
+    _protocolVault = protocolVault;
     _ratio = ratio;
 
     emit CreateCampaign(msg.sender);
   }
 
   /**
-   * @dev Withdraw the remaining funds to advertiser.
+   * @dev withdraw the remaining funds to advertiser.
    * @param advertiser The campaign's creater or owner
    **/
   function withdrawCpaBudget(
@@ -116,7 +120,7 @@ contract Campaign {
   }
 
   /**
-   * @dev Withdraw the remaining funds to advertiser.
+   * @dev withdraw the remaining funds to advertiser.
    * @param advertiser The campaign's creater or owner
    **/
   function withdrawTaskBudget(
@@ -162,7 +166,7 @@ contract Campaign {
       IERC20(_cpaPaymentToken).safeTransfer(msg.sender, _amount);
     }
     if (_rakeAmount > 0) {
-      IERC20(_cpaPaymentToken).safeTransfer(_ad3hub, _rakeAmount);
+      IERC20(_cpaPaymentToken).safeTransfer(_protocolVault, _rakeAmount);
     }
 
     emit ClaimCpaReward(msg.sender);
@@ -196,20 +200,23 @@ contract Campaign {
       IERC20(_taskPaymentToken).safeTransfer(msg.sender, _amount);
     }
     if (_rakeAmount > 0) {
-      IERC20(_taskPaymentToken).safeTransfer(_ad3hub, _rakeAmount);
+      IERC20(_taskPaymentToken).safeTransfer(_protocolVault, _rakeAmount);
     }
 
     emit ClaimTaskReward(msg.sender);
   }
 
   /**
-   * @dev Query campaign remain balance.
+   * @dev Query campaign remain cpa balance.
    **/
   function remainCpaBonusBalance() public view returns (uint256) {
     uint256 balance = IERC20(_cpaPaymentToken).balanceOf(address(this));
     return balance;
   }
 
+  /**
+   * @dev Query campaign remain task balance.
+   **/
   function remainTaskBonusBlance() public view returns (uint256) {
     uint256 balance = IERC20(_taskPaymentToken).balanceOf(address(this));
     return balance;
