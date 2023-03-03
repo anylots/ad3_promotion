@@ -160,8 +160,8 @@ contract Campaign {
     );
 
     claimedCpaAddress[msg.sender] = true;
-    uint256 _amount = amount * ((100 - _ratio) / 100);
-    uint256 _rakeAmount = amount * (_ratio / 100);
+    uint256 _amount = amount * (100 - _ratio) / 100;
+    uint256 _rakeAmount = amount * _ratio / 100;
     if (_amount > 0) {
       IERC20(_cpaPaymentToken).safeTransfer(msg.sender, _amount);
     }
@@ -194,8 +194,8 @@ contract Campaign {
     );
 
     claimedTaskAddress[msg.sender] = true;
-    uint256 _amount = amount * ((100 - _ratio) / 100);
-    uint256 _rakeAmount = amount * (_ratio / 100);
+    uint256 _amount = amount * (100 - _ratio) / 100;
+    uint256 _rakeAmount = amount * _ratio / 100;
     if (_amount > 0) {
       IERC20(_taskPaymentToken).safeTransfer(msg.sender, _amount);
     }

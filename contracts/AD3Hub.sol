@@ -113,8 +113,8 @@ contract AD3Hub is Ownable {
       _ratio
     );
     // prepare cpa budget
-    uint256 _cpaBonusBudget = cpaBonusBudget * ((100 - _ratio) / 100);
-    uint256 _cpaRakeBudget = cpaBonusBudget * (_ratio / 100);
+    uint256 _cpaBonusBudget = cpaBonusBudget * (100 - _ratio) / 100;
+    uint256 _cpaRakeBudget = cpaBonusBudget * _ratio / 100;
     IERC20(cpaPaymentToken).safeTransferFrom(
       msg.sender,
       instance,
@@ -127,8 +127,8 @@ contract AD3Hub is Ownable {
       _cpaRakeBudget
     );
     // prepare task budget
-    uint256 _taskBonusBudget = taskBonusBudget * ((100 - _ratio) / 100);
-    uint256 _taskRakeBudget = taskBonusBudget * (_ratio / 100);
+    uint256 _taskBonusBudget = taskBonusBudget * (100 - _ratio) / 100;
+    uint256 _taskRakeBudget = taskBonusBudget * _ratio / 100;
     IERC20(taskPaymentToken).safeTransferFrom(
       msg.sender,
       instance,
