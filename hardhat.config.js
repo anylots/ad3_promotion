@@ -33,8 +33,8 @@ module.exports = {
     }
     ,
     ethermind: {
-      url: `http://8.210.2.244:9933`,
-      accounts: ['0x5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133']
+      url: `http://47.242.179.164:9933`,
+      accounts: ['0x193144a9aa67b535d16d37e07dcf6c7ca2cec48d2859bb880a117f56633a321e']
     },
     frondier: {
       url: `http://8.210.44.55:9933`,
