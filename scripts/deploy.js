@@ -25,7 +25,7 @@ async function main() {
   await ad3Hub.setCampaignImpl(campaign.address);
   //console.log("campaignImpl address:", campaign.address);
 
-  await ad3Hub.setPaymentToken(usdt_address);
+  // await ad3Hub.setPaymentToken(usdt_address);
 
   // await ad3Hub.setTrustedSigner(deployer.address);
 }
