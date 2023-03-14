@@ -48,7 +48,7 @@ contract AD3Hub is Ownable {
                         EVENT
     //////////////////////////////////////////////////////////////*/
 
-  event CreateCampaign(address indexed advertiser);
+  event CreateCampaign(address indexed advertiser, address campaign, uint256 campaignId);
 
   /*//////////////////////////////////////////////////////////////
                         CONSTRUCTOR
@@ -66,6 +66,7 @@ contract AD3Hub is Ownable {
    * @param taskPaymentToken task bonus token contract address
    **/
   function createCampaign(
+    uint256 campaignId,
     uint256 cpaBonusBudget,
     uint256 taskBonusBudget,
     address cpaPaymentToken,
@@ -147,7 +148,7 @@ contract AD3Hub is Ownable {
     campaigns[msg.sender][lastest] = instance;
     campaignIds[msg.sender] = lastest;
 
-    emit CreateCampaign(msg.sender);
+    emit CreateCampaign(msg.sender, instance, campaignId);
   }
 
   /*//////////////////////////////////////////////////////////////
